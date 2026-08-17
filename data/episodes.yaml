@@ -1,0 +1,17 @@
+# 配信エピソード一覧 — このファイルが SoT、build.py が docs/index.html を生成する。
+#
+# schema (1 entry = 配信 1 話):
+#   no:          配信通し番号 (int)
+#   title:       エピソードタイトル
+#   date:        配信日 YYYY-MM-DD
+#   description: 紹介文 (サイト表示用。所有者の文体運用に従って書く)
+#   links:       配信先 URL (key = listen / spotify / apple / amazon / youtube、無いものは省略)
+#
+# episodes は新しい順に表示される (build.py が no 降順 sort)。
+#
+# show_links: 各配信先の「番組ページ」URL (key は上と同じ)。空の配信先は
+# サイトに「準備中」と表示され、URL を入れると自動でリンクに変わる。
+
+show_links: {}
+
+episodes: []

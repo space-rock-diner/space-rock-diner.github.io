@@ -40,13 +40,14 @@ TEMPLATE = """<!DOCTYPE html>
 <meta property="og:type" content="website">
 <style>
 :root {
-  --bg: #0b0e1a;
-  --bg2: #141a30;
-  --text: #e8e6df;
-  --dim: #9a97a8;
-  --accent: #f5a623;
-  --accent2: #7fd1c8;
-  --line: #2a3050;
+  --bg: #faf6ec;
+  --bg2: #f1e9d6;
+  --text: #33302b;
+  --dim: #85806f;
+  --accent: #d9731a;
+  --accent2: #1f7a70;
+  --line: #e0d7c0;
+  --card: #fffdf7;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -74,7 +75,7 @@ blockquote.intro {
 blockquote.intro p + p { margin-top: 1em; }
 .hosts { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
 @media (max-width: 520px) { .hosts { grid-template-columns: 1fr; } }
-.host { border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem 1.3rem; background: rgba(255,255,255,.02); }
+.host { border: 1px solid var(--line); border-radius: 10px; padding: 1.1rem 1.3rem; background: var(--card); box-shadow: 0 1px 3px rgba(80,60,20,.06); }
 .host b { color: var(--accent); font-size: 1.1rem; letter-spacing: .08em; }
 .host p { color: var(--dim); font-size: .92rem; margin-top: .3rem; }
 .episode { border-bottom: 1px dashed var(--line); padding: 1.2rem 0; }
@@ -84,11 +85,13 @@ blockquote.intro p + p { margin-top: 1em; }
 .ep-desc { color: var(--text); font-size: .95rem; }
 .ep-links { margin-top: .6rem; font-size: .88rem; }
 .ep-links a { margin-right: 1.1em; }
+.ep-refs { margin-top: .6rem; font-size: .86rem; color: var(--dim); line-height: 1.8; }
+.ep-refs a { margin-right: .9em; white-space: nowrap; }
 .empty { color: var(--dim); text-align: center; padding: 1.5rem 0; letter-spacing: .1em; }
 .platforms { display: flex; flex-wrap: wrap; gap: .7rem; }
 .platform {
   border: 1px solid var(--line); border-radius: 999px; padding: .35rem 1.1rem;
-  font-size: .9rem; color: var(--dim); background: rgba(255,255,255,.02);
+  font-size: .9rem; color: var(--dim); background: var(--card);
 }
 a { color: var(--accent2); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -148,7 +151,7 @@ def esc(s: str) -> str:
 
 def render() -> str:
     data = yaml.safe_load((ROOT / "data" / "episodes.yaml").read_text(encoding="utf-8")) or {}
-    episodes = sorted(data.get("episodes") or [], key=lambda e: e.get("no", 0), reverse=True)
+    episodes = sorted(data.get("episodes") or [], key=lambda e: e.get("number", 0), reverse=True)
 
     if not episodes:
         eps_html = '    <p class="empty">ただいま仕込み中。</p>'
@@ -159,12 +162,17 @@ def render() -> str:
                 f'<a href="{esc(e["links"][key])}">{label}</a>'
                 for key, label in PLATFORMS if key in (e.get("links") or {})
             )
+            refs = "".join(
+                f'<a href="{esc(r["url"])}">{esc(r["label"])}</a>'
+                for r in (e.get("references") or [])
+            )
             blocks.append(
                 '    <div class="episode">\n'
-                f'      <div class="ep-meta">#{e["no"]} ・ {esc(str(e.get("date", "")))}</div>\n'
+                f'      <div class="ep-meta">#{e["number"]} ・ {esc(str(e.get("date", "")))}</div>\n'
                 f'      <div class="ep-title">{esc(e["title"])}</div>\n'
                 f'      <div class="ep-desc">{esc(e.get("description", ""))}</div>\n'
                 + (f'      <div class="ep-links">{links}</div>\n' if links else "")
+                + (f'      <div class="ep-refs">この回に出てきたもの: {refs}</div>\n' if refs else "")
                 + "    </div>"
             )
         eps_html = "\n".join(blocks)

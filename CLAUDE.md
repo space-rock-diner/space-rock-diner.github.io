@@ -1,8 +1,8 @@
-# CLAUDE.md — space-rock-diner-web
+# CLAUDE.md — space-rock-diner.github.io
 
 ポッドキャスト「オダキンカワヤンの宇宙ロック食堂」の**公開ウェブサイト**（GitHub Pages）。
 
-- 公開 URL: https://odakin.github.io/space-rock-diner-web/
+- 公開 URL: https://space-rock-diner.github.io/
 - **このリポは public**。企画・収録素材・台本は所有者が別の非公開リポで管理しており、
   ここには公開してよいもの（サイト本体とエピソード一覧データ）だけを置く。
 

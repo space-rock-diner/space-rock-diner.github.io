@@ -1,8 +1,8 @@
-# space-rock-diner-web
+# space-rock-diner.github.io
 
 ポッドキャスト「オダキンカワヤンの宇宙ロック食堂」の公式サイト。
 
-**→ https://odakin.github.io/space-rock-diner-web/**
+**→ https://space-rock-diner.github.io/**
 
 素粒子・宇宙・ロック・カレーのポッドキャスト。専門家に素人が聞き、素人に専門家が聞く。
 

@@ -6,6 +6,8 @@
 **clean なファイルだけの独立リポ・独立履歴**として切り出した（同 owner の
 `wc2026` = private 正本 + public 静的サイトミラー、と同じパターン）。
 GitHub Free の Pages は public リポのみ、という制約とも整合（金はかけない方針）。
+2026-08-18: 二人の番組なので個人名 URL を避け、org `space-rock-diner` へ移管し
+apex repo (`space-rock-diner.github.io`) に改名 → https://space-rock-diner.github.io/
 
 ## なぜフレームワークなしの Python 生成か
 

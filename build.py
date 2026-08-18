@@ -146,7 +146,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 
 
 def esc(s: str) -> str:
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    # 属性値 context (href="...") にも入るので quote 2 種も escape する
+    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+             .replace('"', "&quot;").replace("'", "&#39;"))
 
 
 def render() -> str:

@@ -16,5 +16,5 @@
 mark_style: sticker
 
 otayori:
-  enabled: false
+  enabled: true
   turnstile_sitekey: ""

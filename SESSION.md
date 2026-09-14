@@ -2,6 +2,8 @@
 
 ## Status
 
+**2026-09-14 Cloudflare Pages へ引っ越し**（DESIGN.md）。
+
 2026-08-18 リポ新設。サイト骨格（番組紹介・出演・エピソード一覧・配信先）を
 GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込み中。」表示）、
 配信先はすべて「準備中」表示。
@@ -10,10 +12,11 @@ GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込�
 
 ## 次にやること
 
-- [ ] **Cloudflare Pages へ引っ越し**（2026-09-14 所有者決定）: 受け口のコード・表・設定は commit 済み（フォームは準備中のまま）。
-      ① D1 `otayori` 作成済み（番組用アカウント、APAC、表も作成済み、2026-09-14）。残り = ② Pages プロジェクト作成（所有者、Git 連携）
-      ③ Turnstile のウィジェットと秘密鍵（所有者）→ サイトキーを `data/site.yaml` に ④ `otayori.enabled: true` にして本番で送信確認
-      ⑤ 旧 github.io を新 URL への転送ページに ⑥ README などの URL を更新 ⑦ 溜まったお便りを読む道具
+- [x] **Cloudflare Pages へ引っ越し**（2026-09-14）: 番組用アカウントに Pages（GitHub 連携）+ D1 `otayori`。
+      公開 URL = https://space-rock-diner.pages.dev/ 、旧 github.io は `gh-pages` ブランチの転送ページ。お便りフォーム有効化
+- [ ] **Turnstile**（所有者のダッシュボード操作待ち、2 分）: ウィジェット作成 → 秘密鍵を Pages の `TURNSTILE_SECRET` に →
+      サイトキーを `data/site.yaml`。それまでの機械よけは見えない欄 + 同じサイトからの送信だけ受ける検査
+- [ ] 溜まったお便りを読む道具（D1 を読むだけ。未読 = `read_at` が空。id 1 は引っ越し確認の試験送信で既読扱い）
 - [ ] 配信開始後: `data/episodes.yaml` に第 1 回を追記 + `show_links` に各配信先 URL
 
 ## 最終更新

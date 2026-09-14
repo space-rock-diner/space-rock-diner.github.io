@@ -290,7 +290,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   <section id="otayori" aria-labelledby="otayori-h">
     <h2 id="otayori-h">お便り</h2>
     <p class="lead">聞きたいこと、言いたいこと、どうでもいいこと。<br>ふたりで読んで、ふたりで考えます。</p>
-    <form class="postcard" id="otayori-form" data-ready="0" novalidate>
+    <form class="postcard" id="otayori-form" data-ready="1" action="/api/otayori" method="post" novalidate>
       <div class="postcard-inner">
         <div class="postcard-head">
           <p class="address"><small>TO</small><b>宇宙ロック食堂</b><span>オダキン・カワヤン</span></p>
@@ -393,8 +393,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
         <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
         <div class="actions">
-          <p class="status" id="otayori-status" role="status">ただいま準備中。もうすぐポストを置きます。</p>
-          <button type="submit" class="send" disabled>ポストに入れる
+          <p class="status" id="otayori-status" role="status"></p>
+          <button type="submit" class="send">ポストに入れる
             <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-6-8-2Z"/><path d="m12 14 8-10"/></svg>
           </button>
         </div>

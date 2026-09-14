@@ -35,7 +35,7 @@ apex repo (`space-rock-diner.github.io`) に改名 → https://space-rock-diner.
 - 同じ絵を 1 ページに何枚も入れるので、`marks.scoped()` で SVG 内の id に接頭辞を付ける
   （id が重複すると、非表示の SVG にあるグラデーション定義を参照した絵が描かれなくなる）
 
-## Cloudflare Pages へ引っ越す（2026-09-14 決定、作業中）
+## Cloudflare Pages へ引っ越した（2026-09-14）
 
 GitHub Pages は置いたファイルを配るだけで、お便りを受け取るプログラムを動かせない。Cloudflare Pages なら
 同じサイトに受け口の関数を置けるので、サイトごと引っ越す（所有者判断。URL は `space-rock-diner.pages.dev`）。
@@ -44,6 +44,9 @@ GitHub Pages は置いたファイルを配るだけで、お便りを受け取�
   アカウント名が入る。Pages の URL は `<プロジェクト名>.pages.dev` だけ
 - 配信するのは commit 済みの `docs/` で、Cloudflare 側ではビルドしない（`wrangler.toml` の `pages_build_output_dir`）
 - 費用: 無料枠に収まる（静的ファイルは無制限、関数は 1 日 10 万リクエスト、D1 は 1 日 10 万行の書き込み）
+- アカウントは番組用（所有者判断）。プロジェクトは GitHub 連携で作った = `main` への push で自動公開
+- 旧 URL（github.io）: GitHub Pages はサーバー側で転送できないので、配信元を `gh-pages` ブランチに切り替え、
+  開いた瞬間に新しい URL の同じ場所へ移すページを置いた（`index.html` と `404.html` が同じ転送ページ）
 
 ## お便りコーナー: 見た目も受け口も同じサイト（2026-09-14）
 
@@ -57,8 +60,7 @@ GitHub Pages は置いたファイルを配るだけで、お便りを受け取�
 - 本文の上限は 20,000 字 = 400 字詰め原稿用紙 50 枚（所有者判断）。上限は長さの目安ではなく、いたずらの 1 通を
   大きくさせないための蓋（D1 の 1 行は 2 MB まで、無料枠の保存は全体で 5 GB）。当初の 65535 字（約 164 枚）から下げた
 - JavaScript が無い送信には、JSON でなくトップページへの転送を返す（ただし Turnstile を有効にすると JS 必須）
-- `data/site.yaml` の `otayori.enabled` が true になるまで「準備中」で送信不可。
-  GitHub Pages には受け口が無いので、引っ越しが済むまで true にしない
+- `data/site.yaml` の `otayori.enabled` が false のあいだは「準備中」で送信不可（2026-09-14 に true）
 - メール通知は無い: Cloudflare からメールを送るには独自ドメイン（有料）が要る。溜まったお便りは読みに行く
 
 ローカルでの確かめ方: `npm i -D wrangler` → `npx wrangler d1 execute otayori --local --file=schema.sql`

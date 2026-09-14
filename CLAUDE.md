@@ -1,8 +1,9 @@
 # CLAUDE.md — space-rock-diner.github.io
 
-ポッドキャスト「オダキンカワヤンの宇宙ロック食堂」の**公開ウェブサイト**（GitHub Pages → Cloudflare Pages へ引っ越し中、DESIGN.md）。
+ポッドキャスト「オダキンカワヤンの宇宙ロック食堂」の**公開ウェブサイト**（Cloudflare Pages、2026-09-14 に GitHub Pages から引っ越し）。
 
-- 公開 URL: https://space-rock-diner.github.io/
+- 公開 URL: https://space-rock-diner.pages.dev/ （番組用アカウントの Cloudflare Pages。`main` に push すると自動で公開）
+- 旧 URL https://space-rock-diner.github.io/ は `gh-pages` ブランチの転送ページ（GitHub Pages）。サイト本体をそこに置かない
 - **このリポは public**。企画・収録素材・台本は所有者が別の非公開リポで管理しており、
   ここには公開してよいもの（サイト本体とエピソード一覧データ）だけを置く。
 
@@ -23,7 +24,7 @@
 
 1. `data/episodes.yaml` にエピソードを追記（schema はファイル冒頭コメント）
 2. `python3 build.py` → `docs/index.html` 再生成
-3. commit + push（生成物も commit する = Pages は docs/ を配信）
+3. commit + push（生成物も commit する = Cloudflare Pages は docs/ を配信、ビルドはしない）
 
 ## 作業ルール
 

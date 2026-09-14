@@ -146,8 +146,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .postcard [aria-invalid="true"] { border-color: var(--danger); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .cf-turnstile { min-height: 65px; }
-.field-foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
-#otayori-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.field-foot { display: grid; gap: .25rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
+#otayori-hint { line-height: 1.75; word-break: auto-phrase; }
+#otayori-count { justify-self: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
 #otayori-count.low { color: var(--danger); font-weight: 700; }
 .field-error { color: var(--danger); font-size: .82rem; margin-top: .3rem; }
 .actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; flex-wrap: wrap; }
@@ -388,7 +389,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
           <label for="otayori-body">お便り</label>
           <textarea id="otayori-body" name="body" required maxlength="20000" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-hint">改行もそのまま届きます。本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count" aria-live="off">あと 20,000 字</span></div>
+          <div class="field-foot"><span id="otayori-count" aria-live="off">あと 20,000 字</span><p id="otayori-hint">本名や連絡先は書かなくて大丈夫です。<br>番組で読みあげることがあります。</p></div>
         </div>
         <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 

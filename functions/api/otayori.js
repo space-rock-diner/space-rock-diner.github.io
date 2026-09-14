@@ -16,15 +16,32 @@ const reply = (request, status, data) => {
   });
 };
 
-async function passesTurnstile(env, token) {
-  if (!env.TURNSTILE_SECRET) return true; // 秘密鍵を置くまでは検査しない
-  if (!token) return false;
-  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token }),
-  });
-  const out = await res.json().catch(() => ({}));
-  return out.success === true;
+// Turnstile の確認 (Cloudflare 公式の手順どおり)。成功・動作名・送信元のホスト名がすべて合うときだけ通す。
+// 秘密鍵が無い・通信に失敗した・形が変、はすべて拒否する (= 確認できないものは受け付けない)
+const TURNSTILE_ACTION = "otayori";
+
+async function passesTurnstile(env, request, token) {
+  const hostnames = new Set((env.TURNSTILE_HOSTNAMES || "").split(",").map((h) => h.trim()).filter(Boolean));
+  if (!env.TURNSTILE_SECRET || hostnames.size === 0) return false;
+  if (typeof token !== "string" || token.length === 0 || token.length > 2048) return false;
+  let result;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: AbortSignal.timeout(10_000),
+      body: new URLSearchParams({
+        secret: env.TURNSTILE_SECRET,
+        response: token,
+        remoteip: request.headers.get("CF-Connecting-IP") || "",
+      }),
+    });
+    if (!res.ok) return false;
+    result = await res.json();
+  } catch {
+    return false;
+  }
+  return result.success === true && result.action === TURNSTILE_ACTION && hostnames.has(result.hostname);
 }
 
 export async function onRequestPost({ request, env }) {
@@ -46,7 +63,7 @@ export async function onRequestPost({ request, env }) {
   const body = (form.get("body") || "").toString().trim();
   if (!body) return reply(request, 400, { ok: false, error: "empty" });
   if (name.length > MAX_NAME || body.length > MAX_BODY) return reply(request, 400, { ok: false, error: "too_long" });
-  if (!(await passesTurnstile(env, form.get("cf-turnstile-response")))) {
+  if (!(await passesTurnstile(env, request, form.get("cf-turnstile-response")))) {
     return reply(request, 400, { ok: false, error: "turnstile" });
   }
   await env.DB.prepare("INSERT INTO letters (created_at, radio_name, body) VALUES (?, ?, ?)")

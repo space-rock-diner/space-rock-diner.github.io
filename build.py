@@ -181,7 +181,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 }
 .postcard [aria-invalid="true"] { border-color: var(--danger); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.cf-turnstile { min-height: 65px; }
+#otayori-turnstile { min-height: 65px; }
 .field-foot { display: grid; gap: .25rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
 #otayori-hint { line-height: 1.75; word-break: auto-phrase; }
 #otayori-count { justify-self: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -351,7 +351,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
       status.textContent = MESSAGES[out.error] || MESSAGES.other;
     } finally {
       button.disabled = false;
-      if (window.turnstile) window.turnstile.reset();
+      // トークンは 1 回きりなので、送るたびに確認欄を新しくする
+      if (window.turnstile && window.otayoriWidgetId !== undefined) window.turnstile.reset(window.otayoriWidgetId);
     }
   });
 })();
@@ -431,8 +432,12 @@ def render() -> str:
     sitekey = str(ot.get("turnstile_sitekey") or "").strip()
     turnstile = ""
     if sitekey:
-        turnstile = (f'        <div class="cf-turnstile" data-sitekey="{esc(sitekey)}" data-theme="light" data-size="flexible"></div>\n'
-                     '        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>')
+        # 明示描画: 描いた確認欄の ID を持っておき、送信のたびにその欄だけリセットする
+        turnstile = (f'        <div id="otayori-turnstile" data-sitekey="{esc(sitekey)}"></div>\n'
+                     '        <script>window.otayoriTurnstileReady = () => { const el = document.getElementById("otayori-turnstile");'
+                     ' window.otayoriWidgetId = window.turnstile.render(el, { sitekey: el.dataset.sitekey, action: "otayori",'
+                     ' theme: "light", size: "flexible" }); };</script>\n'
+                     '        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=otayoriTurnstileReady" async defer></script>')
     if ot.get("enabled") is True:
         form_attrs = 'data-ready="1" action="/api/otayori" method="post"'
         status, disabled = "", ""

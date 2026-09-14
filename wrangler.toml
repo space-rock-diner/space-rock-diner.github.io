@@ -3,6 +3,11 @@ name = "space-rock-diner"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = "docs"   # 生成物を commit 済みなので、Cloudflare 側のビルドは不要
 
+# Turnstile の確認で受け付ける送信元 (本番)。秘密鍵 TURNSTILE_SECRET は Pages の Secret にあり、ここには書かない。
+# 手元で試すときは .dev.vars に TURNSTILE_HOSTNAMES="localhost" を置く (本番に localhost を入れない)
+[vars]
+TURNSTILE_HOSTNAMES = "space-rock-diner.pages.dev"
+
 # お便りの保存先 (番組用アカウントの D1、2026-09-14 作成、APAC)。id は秘密ではない
 [[d1_databases]]
 binding = "DB"

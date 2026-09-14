@@ -145,7 +145,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 }
 .postcard [aria-invalid="true"] { border-color: var(--danger); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.cf-turnstile { min-height: 65px; }
+#otayori-turnstile { min-height: 65px; }
 .field-foot { display: grid; gap: .25rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
 #otayori-hint { line-height: 1.75; word-break: auto-phrase; }
 #otayori-count { justify-self: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -392,7 +392,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
           <div class="field-foot"><span id="otayori-count" aria-live="off">あと 20,000 字</span><p id="otayori-hint">本名や連絡先は書かなくて大丈夫です。<br>番組で読みあげることがあります。</p></div>
         </div>
         <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-
+        <div id="otayori-turnstile" data-sitekey="0x4AAAAAAEz_cJO1MzEzOfUf"></div>
+        <script>window.otayoriTurnstileReady = () => { const el = document.getElementById("otayori-turnstile"); window.otayoriWidgetId = window.turnstile.render(el, { sitekey: el.dataset.sitekey, action: "otayori", theme: "light", size: "flexible" }); };</script>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=otayoriTurnstileReady" async defer></script>
         <div class="actions">
           <p class="status" id="otayori-status" role="status"></p>
           <button type="submit" class="send">ポストに入れる
@@ -473,7 +475,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
       status.textContent = MESSAGES[out.error] || MESSAGES.other;
     } finally {
       button.disabled = false;
-      if (window.turnstile) window.turnstile.reset();
+      // トークンは 1 回きりなので、送るたびに確認欄を新しくする
+      if (window.turnstile && window.otayoriWidgetId !== undefined) window.turnstile.reset(window.otayoriWidgetId);
     }
   });
 })();

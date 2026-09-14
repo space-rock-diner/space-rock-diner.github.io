@@ -110,6 +110,7 @@ blockquote.intro p + p { margin-top: 1em; }
 a { color: var(--accent2); text-decoration: none; }
 a:hover { text-decoration: underline; }
 footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5rem; letter-spacing: .1em; }
+.credit { font-size: .74rem; letter-spacing: .2em; }
 
 /* ---- お便り: 航空便のはがき ---- */
 .lead { font-size: .98rem; margin-bottom: 1.6rem; }
@@ -170,7 +171,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   padding: .6rem .85rem; transition: border-color .2s, box-shadow .2s;
 }
 .postcard textarea {
-  line-height: 2; min-height: calc(7 * 2em + 1.3rem); resize: vertical; field-sizing: content;
+  line-height: 2; min-height: calc(7 * 2em + 1.3rem); resize: none; overflow: hidden; field-sizing: content;
   background: #fff linear-gradient(transparent calc(2em - 1px), #efe7d4 0) 0 .6rem / 100% 2em local;
 }
 .postcard input::placeholder, .postcard textarea::placeholder { color: #a9a393; }
@@ -182,7 +183,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .cf-turnstile { min-height: 65px; }
 .field-foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
-#otayori-count { white-space: nowrap; }
+#otayori-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#otayori-count.low { color: var(--danger); font-weight: 700; }
 .field-error { color: var(--danger); font-size: .82rem; margin-top: .3rem; }
 .actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; flex-wrap: wrap; }
 .send {
@@ -268,7 +270,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
           <label for="otayori-body">お便り</label>
           <textarea id="otayori-body" name="body" required maxlength="65535" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 65535</span></div>
+          <div class="field-foot"><span id="otayori-hint">改行もそのまま届きます。本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count" aria-live="off">あと 65,535 字</span></div>
         </div>
         <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 %%TURNSTILE%%
@@ -289,7 +291,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     </div>
   </section>
 
-  <footer>© 2026 オダキンカワヤンの宇宙ロック食堂</footer>
+  <footer>© 2026 オダキンカワヤンの宇宙ロック食堂<br><span class="credit">文責　クロード</span></footer>
 </main>
 <script>
 (() => {
@@ -299,6 +301,19 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     const pick = Math.floor(Math.random() * arts.length);
     arts.forEach((el, i) => { el.style.display = i === pick ? "block" : "none"; });
   }
+  const body = document.getElementById("otayori-body");
+  const count = document.getElementById("otayori-count");
+  const max = body.maxLength;
+  const update = () => {
+    const left = max - body.value.length;
+    count.textContent = `あと ${left.toLocaleString("ja-JP")} 字`;
+    count.classList.toggle("low", left < 1000);
+    // 書いた分だけ欄を伸ばす (CSS の field-sizing が効かないブラウザ向け。効くブラウザでも害は無い)
+    body.style.height = "auto";
+    body.style.height = `${body.scrollHeight + 2}px`;
+  };
+  body.addEventListener("input", update);
+  update();
   if (form.dataset.ready !== "1") return;
   const MESSAGES = {
     turnstile: "ロボットでない確認がまだのようです。確認の欄が済んでから、もう一度どうぞ。",
@@ -306,19 +321,13 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     empty: "ひとことだけでも書いてください。",
     other: "うまく送れませんでした。電波のいいところで、もう一度お願いします。",
   };
-  const body = document.getElementById("otayori-body");
   const name = document.getElementById("otayori-name");
-  const count = document.getElementById("otayori-count");
   const error = document.getElementById("otayori-error");
   const status = document.getElementById("otayori-status");
   const button = form.querySelector(".send");
-  const max = body.maxLength;
-  const update = () => { count.textContent = `${body.value.length} / ${max}`; };
   body.addEventListener("input", () => {
-    update();
     if (body.value.trim()) { body.removeAttribute("aria-invalid"); error.hidden = true; }
   });
-  update();
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!body.value.trim()) {

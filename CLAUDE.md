@@ -11,6 +11,8 @@
 | path | 役割 |
 |---|---|
 | `data/episodes.yaml` | エピソード一覧の SoT（+ `show_links` = 各配信先の番組ページ URL） |
+| `data/site.yaml` | サイト全体の設定（`mark_style` = 絵の画風 / `otayori.mailto` = お便りの宛先、空なら準備中表示） |
+| `art/marks.py` | 絵（UFO / ベース / カレー）を SVG 文字列で返す。画風 3 つ（line / sticker / neon） |
 | `build.py` | `docs/index.html` を生成（PyYAML のみ依存、`--check` で同期検査） |
 | `docs/` | GitHub Pages 公開物（生成物、手編集禁止） |
 

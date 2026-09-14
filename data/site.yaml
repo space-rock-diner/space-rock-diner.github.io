@@ -1,0 +1,14 @@
+# サイト全体の設定 — build.py が読む (エピソード一覧は episodes.yaml)
+#
+# mark_style: ヘッダーとお便りコーナーの絵の画風 (art/marks.py)
+#   line    = モノライン (線 1 本で描く、静か)
+#   sticker = レトロ・ステッカー (白フチと影のワッペン風)
+#   neon    = ネオンサイン (暗い地に光る管)
+#
+# otayori.mailto: お便りの宛先メールアドレス。空のあいだはフォームを「準備中」として表示し、
+#   送信ボタンを押せないようにする
+
+mark_style: sticker
+
+otayori:
+  mailto: ""

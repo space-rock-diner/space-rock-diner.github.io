@@ -25,6 +25,8 @@ apex repo (`space-rock-diner.github.io`) に改名 → https://space-rock-diner.
 
 ## 絵は SVG をページに埋め込む（2026-09-14）
 
+一般則（描いて見て直す・特徴の取り方・id の接頭辞）= [claude-config `inline-svg-illustration.md`](https://github.com/odakin/claude-config/blob/main/conventions/inline-svg-illustration.md)。
+
 ヘッダーの 🛸🎸🍛 は、絵文字の 🎸 がギター（6 弦）でベースを描けないので、自前の絵に替えた。
 ベースはリッケンバッカー 4003（波形に伸びる長いホーン、2+2 のペグ、白い縁取りと 2 段のピックガード、
 ブリッジの金属カバー、三角のインレイ）、カレーは黒い丸皿のあいがけスパイスカレーを参考にしている。
@@ -36,6 +38,8 @@ apex repo (`space-rock-diner.github.io`) に改名 → https://space-rock-diner.
   （id が重複すると、非表示の SVG にあるグラデーション定義を参照した絵が描かれなくなる）
 
 ## Cloudflare Pages へ引っ越した（2026-09-14）
+
+一般則（受け口の選択肢の壊れ方・Pages と D1・Turnstile・GitHub Pages の転送）= [claude-config `static-site-form-backend.md`](https://github.com/odakin/claude-config/blob/main/conventions/static-site-form-backend.md)。ここにはこのサイトで決めたことだけを書く。
 
 GitHub Pages は置いたファイルを配るだけで、お便りを受け取るプログラムを動かせない。Cloudflare Pages なら
 同じサイトに受け口の関数を置けるので、サイトごと引っ越す（所有者判断。URL は `space-rock-diner.pages.dev`）。

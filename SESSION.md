@@ -10,12 +10,15 @@ GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込�
 
 ## 次にやること
 
-- [ ] **お便りの受け取り先を決める**（所有者判断待ち）: いまの実装は Google フォーム宛て（未作成 = 準備中表示）。
-      理由と限界と他の候補は DESIGN.md §お便りコーナー
+- [ ] **Cloudflare Pages へ引っ越し**（2026-09-14 所有者決定）: 受け口のコード・表・設定は commit 済み（フォームは準備中のまま）。
+      残り = ① D1 `otayori` を作って表を作り `wrangler.toml` の D1 の行を有効に ② Pages プロジェクト作成（所有者、Git 連携）
+      ③ Turnstile のウィジェットと秘密鍵（所有者）→ サイトキーを `data/site.yaml` に ④ `otayori.enabled: true` にして本番で送信確認
+      ⑤ 旧 github.io を新 URL への転送ページに ⑥ README などの URL を更新 ⑦ 溜まったお便りを読む道具
 - [ ] 配信開始後: `data/episodes.yaml` に第 1 回を追記 + `show_links` に各配信先 URL
 
 ## 最終更新
 
+2026-09-14b — お便りの受け口を Cloudflare Pages Functions + D1 で実装（`functions/` `schema.sql` `wrangler.toml`）。ローカルの wrangler で確認: 65535 字ちょうど = 保存 / 1 字超過・絵文字で超過 = 拒否、Turnstile テスト鍵で通過・拒否、JS 無しの送信 = トップへ転送、画面のボタンから送信 → 保存 → 完了表示。本文上限は所有者案の 65535 字。
 2026-09-14 — 絵を `art/marks.py`（SVG、3 画風）に、お便りコーナー（航空便のはがき型、
 入力はラジオネームと本文だけ）を `build.py` に追加。宛先アドレスを出さないため送信先は Google フォームに変更。設計の理由は DESIGN.md。
 確かめたこと: デスクトップ幅と 375 px 幅で表示崩れなし・横スクロールなし、話題の切手がランダムに 1 つ出る、

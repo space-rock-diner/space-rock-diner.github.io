@@ -6,16 +6,15 @@
 #   neon    = ネオンサイン (暗い地に光る管)
 #   使わない 2 つも art/marks.py に残してあり、ここを書き換えれば切り替わる
 #
-# otayori: お便りの送り先 = 番組用アカウントで作った Google フォーム (設問は 2 つ)
-#   form_action: https://docs.google.com/forms/d/e/<フォームの id>/formResponse
-#   name_entry:  「ラジオネーム」設問の entry.<数字>
-#   body_entry:  「お便り」設問の entry.<数字>
-#   3 つ揃うまではフォームを「準備中」として表示し、送信ボタンを押せないようにする。
+# otayori: お便りコーナー。受け口は同じサイトの /api/otayori (functions/api/otayori.js → D1)。
 #   宛先のメールアドレスはページに出さない (2026-09-14 所有者判断)
+#   enabled:           true でフォームを使えるようにする。Cloudflare Pages で受け口が動くまで false
+#                      (GitHub Pages には受け口が無いので、そちらで true にすると送信が失敗する)
+#   turnstile_sitekey: Cloudflare Turnstile のサイトキー (公開してよい値)。秘密鍵は Pages の
+#                      Variables and Secrets に TURNSTILE_SECRET として置き、ここには書かない
 
 mark_style: sticker
 
 otayori:
-  form_action: ""
-  name_entry: ""
-  body_entry: ""
+  enabled: false
+  turnstile_sitekey: ""

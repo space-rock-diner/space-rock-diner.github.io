@@ -1,0 +1,10 @@
+# Cloudflare Pages の設定 (ダッシュボードより優先される)。手順と理由は DESIGN.md
+name = "space-rock-diner"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "docs"   # 生成物を commit 済みなので、Cloudflare 側のビルドは不要
+
+# お便りの保存先。D1 を作ったら id を入れて有効にする (id は秘密ではない)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "otayori"
+# database_id = ""

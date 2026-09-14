@@ -35,22 +35,33 @@ apex repo (`space-rock-diner.github.io`) に改名 → https://space-rock-diner.
 - 同じ絵を 1 ページに何枚も入れるので、`marks.scoped()` で SVG 内の id に接頭辞を付ける
   （id が重複すると、非表示の SVG にあるグラデーション定義を参照した絵が描かれなくなる）
 
-## お便りコーナー: 見た目はこのサイト、受け取りは外部（2026-09-14、受け取り先は暫定）
+## Cloudflare Pages へ引っ越す（2026-09-14 決定、作業中）
 
-GitHub Pages は置いたファイルを配るだけで、送られてきた内容を受け取って保存するプログラムを動かせない。
-なので**フォームの画面はこのサイトで作り、送信先だけを外に置く**。
+GitHub Pages は置いたファイルを配るだけで、お便りを受け取るプログラムを動かせない。Cloudflare Pages なら
+同じサイトに受け口の関数を置けるので、サイトごと引っ越す（所有者判断。URL は `space-rock-diner.pages.dev`）。
 
-- 宛先のメールアドレスはページに出さない（所有者判断）。最初に作ったメールアプリを開く方式は
-  アドレスが丸見えになるのでやめた
-- いまの実装の送信先は Google フォーム（番組用アカウントで作る、設問はラジオネームと本文の 2 つ）。
-  `data/site.yaml` の `otayori` に送信 URL と 2 つの entry 番号が揃うまで「準備中」で送信不可
-- 入力はラジオネーム（任意）と本文だけ。話題の選択や「読みあげてよいか」は置かない
-- JavaScript が無くても同じ送信先へ普通に送れる（送信後は Google の完了画面になる）
-- **限界（実測）**: Google フォームは別ドメインなので、送った結果をページ側で読めない。
-  受け口がエラーを返しても画面は「ポストに入りました」と出る（2026-09-14、ローカルの受け口で 501 を
-  返させて確認）。届いたかは回答一覧を見るしかない
-- 受け取り先の候補は他にもある（番組用アカウントの Apps Script、Cloudflare Workers など）。
-  どれにするかは所有者判断待ち
+- **Workers でなく Pages で作る**: Cloudflare の作成画面は既定で Workers に誘導するが、Workers の URL には
+  アカウント名が入る。Pages の URL は `<プロジェクト名>.pages.dev` だけ
+- 配信するのは commit 済みの `docs/` で、Cloudflare 側ではビルドしない（`wrangler.toml` の `pages_build_output_dir`）
+- 費用: 無料枠に収まる（静的ファイルは無制限、関数は 1 日 10 万リクエスト、D1 は 1 日 10 万行の書き込み）
+
+## お便りコーナー: 見た目も受け口も同じサイト（2026-09-14）
+
+- 画面: `build.py` のはがき。入力はラジオネーム（任意）と本文だけ。宛先のメールアドレスはページに出さない（所有者判断）
+- 受け口: `functions/api/otayori.js`（POST `/api/otayori`）→ D1 の `letters` 表（`schema.sql`）。
+  IP やメールアドレスは保存しない
+- 同じサイト内の通信なので、届いたか失敗したかを画面に正しく出せる（Google フォーム方式を試したときは、
+  別ドメインゆえ受け口がエラーでも「届いた」と出てしまった = 実測で却下）
+- 機械よけ: 人には見えない欄（埋まっていたら保存せず成功を返す）+ Cloudflare Turnstile。
+  サイトキーは `data/site.yaml`、秘密鍵は Pages の Variables and Secrets の `TURNSTILE_SECRET`（リポに書かない）
+- 本文の上限は 65535 字（所有者の案）。D1 の 1 行の上限は 2 MB で、日本語で埋めても約 196 KB
+- JavaScript が無い送信には、JSON でなくトップページへの転送を返す（ただし Turnstile を有効にすると JS 必須）
+- `data/site.yaml` の `otayori.enabled` が true になるまで「準備中」で送信不可。
+  GitHub Pages には受け口が無いので、引っ越しが済むまで true にしない
+- メール通知は無い: Cloudflare からメールを送るには独自ドメイン（有料）が要る。溜まったお便りは読みに行く
+
+ローカルでの確かめ方: `npm i -D wrangler` → `npx wrangler d1 execute otayori --local --file=schema.sql`
+→ `npx wrangler pages dev`（`wrangler.toml` の D1 の行を有効にしておく）。
 
 ## 配信先の表示
 

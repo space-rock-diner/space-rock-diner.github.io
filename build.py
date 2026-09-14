@@ -179,6 +179,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent2) 20%, transparent);
 }
 .postcard [aria-invalid="true"] { border-color: var(--danger); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.cf-turnstile { min-height: 65px; }
 .field-foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
 #otayori-count { white-space: nowrap; }
 .field-error { color: var(--danger); font-size: .82rem; margin-top: .3rem; }
@@ -260,14 +262,16 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
         </div>
         <div class="field">
           <label for="otayori-name">ラジオネーム<span class="opt">なくても大丈夫</span></label>
-          <input type="text" id="otayori-name" name="%%NAME_ENTRY%%" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
+          <input type="text" id="otayori-name" name="radio_name" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
         </div>
         <div class="field">
           <label for="otayori-body">お便り</label>
-          <textarea id="otayori-body" name="%%BODY_ENTRY%%" required maxlength="2000" aria-describedby="otayori-hint otayori-count"></textarea>
+          <textarea id="otayori-body" name="body" required maxlength="65535" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 2000</span></div>
+          <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 65535</span></div>
         </div>
+        <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+%%TURNSTILE%%
         <div class="actions">
           <p class="status" id="otayori-status" role="status">%%STATUS%%</p>
           <button type="submit" class="send"%%DISABLED%%>ポストに入れる
@@ -295,7 +299,13 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     const pick = Math.floor(Math.random() * arts.length);
     arts.forEach((el, i) => { el.style.display = i === pick ? "block" : "none"; });
   }
-  if (!form.action || form.dataset.ready !== "1") return;
+  if (form.dataset.ready !== "1") return;
+  const MESSAGES = {
+    turnstile: "ロボットでない確認がまだのようです。確認の欄が済んでから、もう一度どうぞ。",
+    too_long: "さすがに長すぎました。65535 字までにしてください。",
+    empty: "ひとことだけでも書いてください。",
+    other: "うまく送れませんでした。電波のいいところで、もう一度お願いします。",
+  };
   const body = document.getElementById("otayori-body");
   const name = document.getElementById("otayori-name");
   const count = document.getElementById("otayori-count");
@@ -316,16 +326,22 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     }
     button.disabled = true;
     status.textContent = "ポストに向かっています。";
+    let out = {};
     try {
-      // Google フォームは別ドメインなので応答の中身は読めない (no-cors)。通信が通れば届いたものとして扱う
-      await fetch(form.action, { method: "POST", mode: "no-cors", body: new FormData(form) });
+      const res = await fetch(form.action, {
+        method: "POST", body: new FormData(form), headers: { accept: "application/json" },
+      });
+      out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.ok) throw new Error(out.error || String(res.status));
       form.classList.add("sent");
       status.textContent = "ポストに入りました。ありがとうございます。";
       body.value = ""; name.value = ""; update();
     } catch {
-      status.textContent = "うまく送れませんでした。電波のいいところで、もう一度お願いします。";
+      form.classList.remove("sent");
+      status.textContent = MESSAGES[out.error] || MESSAGES.other;
     } finally {
       button.disabled = false;
+      if (window.turnstile) window.turnstile.reset();
     }
   });
 })();
@@ -399,28 +415,26 @@ def render() -> str:
 
     # お便り
     ot = site.get("otayori") or {}
-    action, name_entry, body_entry = (str(ot.get(k) or "").strip() for k in ("form_action", "name_entry", "body_entry"))
     stamps = "\n".join(
         f'          <span class="stamp-art">{art(style, key, f"stamp-{key}")}</span>' for key in STAMP_ART
     )
-    ready = bool(action and name_entry and body_entry)
-    if ready and not (action.startswith("https://docs.google.com/forms/") and action.endswith("/formResponse")):
-        raise SystemExit(f"❌ otayori.form_action は Google フォームの .../formResponse の URL: {action}")
-    if ready:
-        # JavaScript が無いときも、そのまま Google フォームへ送れる (送信後は Google の完了画面)
-        form_attrs = f'data-ready="1" action="{esc(action)}" method="post"'
+    sitekey = str(ot.get("turnstile_sitekey") or "").strip()
+    turnstile = ""
+    if sitekey:
+        turnstile = (f'        <div class="cf-turnstile" data-sitekey="{esc(sitekey)}" data-theme="light" data-size="flexible"></div>\n'
+                     '        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>')
+    if ot.get("enabled") is True:
+        form_attrs = 'data-ready="1" action="/api/otayori" method="post"'
         status, disabled = "", ""
     else:
         form_attrs, status, disabled = 'data-ready="0"', "ただいま準備中。もうすぐポストを置きます。", " disabled"
-        name_entry, body_entry = "radio_name", "body"
 
     return (TEMPLATE
             .replace("%%MARK%%", marks.scoped(marks.mark(style), "mark"))
             .replace("%%EPISODES%%", eps_html)
             .replace("%%STAMPS%%", stamps)
             .replace("%%FORM_ATTRS%%", form_attrs)
-            .replace("%%NAME_ENTRY%%", esc(name_entry))
-            .replace("%%BODY_ENTRY%%", esc(body_entry))
+            .replace("%%TURNSTILE%%", turnstile)
             .replace("%%STATUS%%", status)
             .replace("%%DISABLED%%", disabled)
             .replace("%%PLATFORMS%%", plat_html))

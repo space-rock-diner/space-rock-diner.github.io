@@ -143,6 +143,8 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent2) 20%, transparent);
 }
 .postcard [aria-invalid="true"] { border-color: var(--danger); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.cf-turnstile { min-height: 65px; }
 .field-foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: .35rem; font-size: .78rem; color: var(--dim-strong); }
 #otayori-count { white-space: nowrap; }
 .field-error { color: var(--danger); font-size: .82rem; margin-top: .3rem; }
@@ -382,10 +384,12 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
         </div>
         <div class="field">
           <label for="otayori-body">お便り</label>
-          <textarea id="otayori-body" name="body" required maxlength="2000" aria-describedby="otayori-hint otayori-count"></textarea>
+          <textarea id="otayori-body" name="body" required maxlength="65535" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 2000</span></div>
+          <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 65535</span></div>
         </div>
+        <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
         <div class="actions">
           <p class="status" id="otayori-status" role="status">ただいま準備中。もうすぐポストを置きます。</p>
           <button type="submit" class="send" disabled>ポストに入れる
@@ -417,7 +421,13 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     const pick = Math.floor(Math.random() * arts.length);
     arts.forEach((el, i) => { el.style.display = i === pick ? "block" : "none"; });
   }
-  if (!form.action || form.dataset.ready !== "1") return;
+  if (form.dataset.ready !== "1") return;
+  const MESSAGES = {
+    turnstile: "ロボットでない確認がまだのようです。確認の欄が済んでから、もう一度どうぞ。",
+    too_long: "さすがに長すぎました。65535 字までにしてください。",
+    empty: "ひとことだけでも書いてください。",
+    other: "うまく送れませんでした。電波のいいところで、もう一度お願いします。",
+  };
   const body = document.getElementById("otayori-body");
   const name = document.getElementById("otayori-name");
   const count = document.getElementById("otayori-count");
@@ -438,16 +448,22 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     }
     button.disabled = true;
     status.textContent = "ポストに向かっています。";
+    let out = {};
     try {
-      // Google フォームは別ドメインなので応答の中身は読めない (no-cors)。通信が通れば届いたものとして扱う
-      await fetch(form.action, { method: "POST", mode: "no-cors", body: new FormData(form) });
+      const res = await fetch(form.action, {
+        method: "POST", body: new FormData(form), headers: { accept: "application/json" },
+      });
+      out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.ok) throw new Error(out.error || String(res.status));
       form.classList.add("sent");
       status.textContent = "ポストに入りました。ありがとうございます。";
       body.value = ""; name.value = ""; update();
     } catch {
-      status.textContent = "うまく送れませんでした。電波のいいところで、もう一度お願いします。";
+      form.classList.remove("sent");
+      status.textContent = MESSAGES[out.error] || MESSAGES.other;
     } finally {
       button.disabled = false;
+      if (window.turnstile) window.turnstile.reset();
     }
   });
 })();

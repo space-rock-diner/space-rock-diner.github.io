@@ -2,7 +2,7 @@
 // 本文とラジオネームを D1 の letters 表 (schema.sql) に 1 行入れる。送り主を特定する情報は保存しない。
 // fetch から来たら JSON を、JavaScript の無いブラウザの普通の送信ならトップへの転送を返す。
 const MAX_NAME = 40;
-const MAX_BODY = 65535; // 2026-09-14 所有者の案。D1 の 1 行の上限 2 MB に対し、日本語で埋めても約 196 KB
+const MAX_BODY = 20000; // 400 字詰め原稿用紙 50 枚 (2026-09-14 所有者判断)。D1 の 1 行の上限 2 MB に対し、日本語で約 60 KB
 
 const reply = (request, status, data) => {
   const wantsJson = (request.headers.get("accept") || "").includes("application/json");

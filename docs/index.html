@@ -386,9 +386,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
         </div>
         <div class="field">
           <label for="otayori-body">お便り</label>
-          <textarea id="otayori-body" name="body" required maxlength="65535" aria-describedby="otayori-hint otayori-count"></textarea>
+          <textarea id="otayori-body" name="body" required maxlength="20000" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-hint">改行もそのまま届きます。本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count" aria-live="off">あと 65,535 字</span></div>
+          <div class="field-foot"><span id="otayori-hint">改行もそのまま届きます。本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count" aria-live="off">あと 20,000 字</span></div>
         </div>
         <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
@@ -439,7 +439,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   if (form.dataset.ready !== "1") return;
   const MESSAGES = {
     turnstile: "ロボットでない確認がまだのようです。確認の欄が済んでから、もう一度どうぞ。",
-    too_long: "さすがに長すぎました。65535 字までにしてください。",
+    too_long: "長すぎました。原稿用紙 50 枚分、20,000 字までにしてください。",
     empty: "ひとことだけでも書いてください。",
     other: "うまく送れませんでした。電波のいいところで、もう一度お願いします。",
   };

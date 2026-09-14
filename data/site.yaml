@@ -2,13 +2,20 @@
 #
 # mark_style: ヘッダーとお便りコーナーの絵の画風 (art/marks.py)
 #   line    = モノライン (線 1 本で描く、静か)
-#   sticker = レトロ・ステッカー (白フチと影のワッペン風)
+#   sticker = レトロ・ステッカー (白フチと影のワッペン風)  ← 2026-09-14 所有者が選択
 #   neon    = ネオンサイン (暗い地に光る管)
+#   使わない 2 つも art/marks.py に残してあり、ここを書き換えれば切り替わる
 #
-# otayori.mailto: お便りの宛先メールアドレス。空のあいだはフォームを「準備中」として表示し、
-#   送信ボタンを押せないようにする
+# otayori: お便りの送り先 = 番組用アカウントで作った Google フォーム (設問は 2 つ)
+#   form_action: https://docs.google.com/forms/d/e/<フォームの id>/formResponse
+#   name_entry:  「ラジオネーム」設問の entry.<数字>
+#   body_entry:  「お便り」設問の entry.<数字>
+#   3 つ揃うまではフォームを「準備中」として表示し、送信ボタンを押せないようにする。
+#   宛先のメールアドレスはページに出さない (2026-09-14 所有者判断)
 
 mark_style: sticker
 
 otayori:
-  mailto: ""
+  form_action: ""
+  name_entry: ""
+  body_entry: ""

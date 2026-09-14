@@ -198,6 +198,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .send:disabled { background: #b9b2a2; box-shadow: none; cursor: not-allowed; }
 .status { font-size: .86rem; color: var(--dim-strong); }
 .status:empty { display: none; }
+.postcard.sent .status { color: var(--accent2); font-weight: 700; }
 .status code { font-family: inherit; color: var(--text); background: #f3ecdc; padding: .05rem .4rem; border-radius: 6px; user-select: all; }
 @media (max-width: 480px) {
   .stamp { width: 66px; height: 78px; }
@@ -259,11 +260,11 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
         </div>
         <div class="field">
           <label for="otayori-name">ラジオネーム<span class="opt">なくても大丈夫</span></label>
-          <input type="text" id="otayori-name" name="radio_name" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
+          <input type="text" id="otayori-name" name="%%NAME_ENTRY%%" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
         </div>
         <div class="field">
           <label for="otayori-body">お便り</label>
-          <textarea id="otayori-body" name="body" required maxlength="2000" aria-describedby="otayori-hint otayori-count"></textarea>
+          <textarea id="otayori-body" name="%%BODY_ENTRY%%" required maxlength="2000" aria-describedby="otayori-hint otayori-count"></textarea>
           <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
           <div class="field-foot"><span id="otayori-hint">本名や連絡先は書かなくて大丈夫です。番組で読みあげることがあります。</span><span id="otayori-count">0 / 2000</span></div>
         </div>
@@ -294,12 +295,13 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     const pick = Math.floor(Math.random() * arts.length);
     arts.forEach((el, i) => { el.style.display = i === pick ? "block" : "none"; });
   }
-  const to = form.dataset.to;
-  if (!to) return;
+  if (!form.action || form.dataset.ready !== "1") return;
   const body = document.getElementById("otayori-body");
+  const name = document.getElementById("otayori-name");
   const count = document.getElementById("otayori-count");
   const error = document.getElementById("otayori-error");
   const status = document.getElementById("otayori-status");
+  const button = form.querySelector(".send");
   const max = body.maxLength;
   const update = () => { count.textContent = `${body.value.length} / ${max}`; };
   body.addEventListener("input", () => {
@@ -307,20 +309,24 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     if (body.value.trim()) { body.removeAttribute("aria-invalid"); error.hidden = true; }
   });
   update();
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!body.value.trim()) {
       body.setAttribute("aria-invalid", "true"); error.hidden = false; body.focus(); return;
     }
-    const data = new FormData(form);
-    const name = (data.get("radio_name") || "").trim();
-    const text = [`ラジオネーム：${name || "（なし）"}`, "", body.value.trim()].join("\\n");
-    const subject = name ? `【お便り】${name}` : "【お便り】";
-    location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    status.innerHTML = "";
-    status.append("メールの画面が開きます。開かないときは、");
-    const code = document.createElement("code"); code.textContent = to;
-    status.append(code, " にそのまま送ってください。");
+    button.disabled = true;
+    status.textContent = "ポストに向かっています。";
+    try {
+      // Google フォームは別ドメインなので応答の中身は読めない (no-cors)。通信が通れば届いたものとして扱う
+      await fetch(form.action, { method: "POST", mode: "no-cors", body: new FormData(form) });
+      form.classList.add("sent");
+      status.textContent = "ポストに入りました。ありがとうございます。";
+      body.value = ""; name.value = ""; update();
+    } catch {
+      status.textContent = "うまく送れませんでした。電波のいいところで、もう一度お願いします。";
+    } finally {
+      button.disabled = false;
+    }
   });
 })();
 </script>
@@ -392,21 +398,29 @@ def render() -> str:
     )
 
     # お便り
-    mailto = ((site.get("otayori") or {}).get("mailto") or "").strip()
+    ot = site.get("otayori") or {}
+    action, name_entry, body_entry = (str(ot.get(k) or "").strip() for k in ("form_action", "name_entry", "body_entry"))
     stamps = "\n".join(
         f'          <span class="stamp-art">{art(style, key, f"stamp-{key}")}</span>' for key in STAMP_ART
     )
-    if mailto:
-        form_attrs = (f'data-to="{esc(mailto)}" action="mailto:{esc(mailto)}" method="post" enctype="text/plain"')
+    ready = bool(action and name_entry and body_entry)
+    if ready and not (action.startswith("https://docs.google.com/forms/") and action.endswith("/formResponse")):
+        raise SystemExit(f"❌ otayori.form_action は Google フォームの .../formResponse の URL: {action}")
+    if ready:
+        # JavaScript が無いときも、そのまま Google フォームへ送れる (送信後は Google の完了画面)
+        form_attrs = f'data-ready="1" action="{esc(action)}" method="post"'
         status, disabled = "", ""
     else:
-        form_attrs, status, disabled = 'data-to=""', "ただいま準備中。もうすぐポストを置きます。", " disabled"
+        form_attrs, status, disabled = 'data-ready="0"', "ただいま準備中。もうすぐポストを置きます。", " disabled"
+        name_entry, body_entry = "radio_name", "body"
 
     return (TEMPLATE
             .replace("%%MARK%%", marks.scoped(marks.mark(style), "mark"))
             .replace("%%EPISODES%%", eps_html)
             .replace("%%STAMPS%%", stamps)
             .replace("%%FORM_ATTRS%%", form_attrs)
+            .replace("%%NAME_ENTRY%%", esc(name_entry))
+            .replace("%%BODY_ENTRY%%", esc(body_entry))
             .replace("%%STATUS%%", status)
             .replace("%%DISABLED%%", disabled)
             .replace("%%PLATFORMS%%", plat_html))

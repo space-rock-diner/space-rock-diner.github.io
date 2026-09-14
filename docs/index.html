@@ -162,6 +162,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .send:disabled { background: #b9b2a2; box-shadow: none; cursor: not-allowed; }
 .status { font-size: .86rem; color: var(--dim-strong); }
 .status:empty { display: none; }
+.postcard.sent .status { color: var(--accent2); font-weight: 700; }
 .status code { font-family: inherit; color: var(--text); background: #f3ecdc; padding: .05rem .4rem; border-radius: 6px; user-select: all; }
 @media (max-width: 480px) {
   .stamp { width: 66px; height: 78px; }
@@ -285,7 +286,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
   <section id="otayori" aria-labelledby="otayori-h">
     <h2 id="otayori-h">お便り</h2>
     <p class="lead">聞きたいこと、言いたいこと、どうでもいいこと。<br>ふたりで読んで、ふたりで考えます。</p>
-    <form class="postcard" id="otayori-form" data-to="" novalidate>
+    <form class="postcard" id="otayori-form" data-ready="0" novalidate>
       <div class="postcard-inner">
         <div class="postcard-head">
           <p class="address"><small>TO</small><b>宇宙ロック食堂</b><span>オダキン・カワヤン</span></p>
@@ -416,12 +417,13 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     const pick = Math.floor(Math.random() * arts.length);
     arts.forEach((el, i) => { el.style.display = i === pick ? "block" : "none"; });
   }
-  const to = form.dataset.to;
-  if (!to) return;
+  if (!form.action || form.dataset.ready !== "1") return;
   const body = document.getElementById("otayori-body");
+  const name = document.getElementById("otayori-name");
   const count = document.getElementById("otayori-count");
   const error = document.getElementById("otayori-error");
   const status = document.getElementById("otayori-status");
+  const button = form.querySelector(".send");
   const max = body.maxLength;
   const update = () => { count.textContent = `${body.value.length} / ${max}`; };
   body.addEventListener("input", () => {
@@ -429,20 +431,24 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     if (body.value.trim()) { body.removeAttribute("aria-invalid"); error.hidden = true; }
   });
   update();
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!body.value.trim()) {
       body.setAttribute("aria-invalid", "true"); error.hidden = false; body.focus(); return;
     }
-    const data = new FormData(form);
-    const name = (data.get("radio_name") || "").trim();
-    const text = [`ラジオネーム：${name || "（なし）"}`, "", body.value.trim()].join("\n");
-    const subject = name ? `【お便り】${name}` : "【お便り】";
-    location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    status.innerHTML = "";
-    status.append("メールの画面が開きます。開かないときは、");
-    const code = document.createElement("code"); code.textContent = to;
-    status.append(code, " にそのまま送ってください。");
+    button.disabled = true;
+    status.textContent = "ポストに向かっています。";
+    try {
+      // Google フォームは別ドメインなので応答の中身は読めない (no-cors)。通信が通れば届いたものとして扱う
+      await fetch(form.action, { method: "POST", mode: "no-cors", body: new FormData(form) });
+      form.classList.add("sent");
+      status.textContent = "ポストに入りました。ありがとうございます。";
+      body.value = ""; name.value = ""; update();
+    } catch {
+      status.textContent = "うまく送れませんでした。電波のいいところで、もう一度お願いします。";
+    } finally {
+      button.disabled = false;
+    }
   });
 })();
 </script>

@@ -14,9 +14,9 @@ GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込�
 
 - [x] **Cloudflare Pages へ引っ越し**（2026-09-14）: 番組用アカウントに Pages（GitHub 連携）+ D1 `otayori`。
       公開 URL = https://space-rock-diner.pages.dev/ 、旧 github.io は `gh-pages` ブランチの転送ページ。お便りフォーム有効化
-- [ ] **Turnstile**（所有者のダッシュボード操作待ち、2 分）: ウィジェット作成 → 秘密鍵を Pages の `TURNSTILE_SECRET` に →
-      サイトキーを `data/site.yaml`。それまでの機械よけは見えない欄 + 同じサイトからの送信だけ受ける検査
-- [ ] 溜まったお便りを読む道具（D1 を読むだけ。未読 = `read_at` が空。id 1 は引っ越し確認の試験送信で既読扱い）
+- [x] **Turnstile**（2026-09-15、CLI で作成・秘密鍵を Pages に登録・受け口とページを配線）。本番で確認済み = トークン無し・偽トークンは拒否。
+      **未確認 = 人間のブラウザで本物の確認を通した送信**（自動操作のブラウザは確認を通れない。所有者に 1 通送ってもらう）
+- [x] 溜まったお便りを読む道具 = 企画リポ（非公開）の `scripts/read-otayori.py`
 - [ ] 配信開始後: `data/episodes.yaml` に第 1 回を追記 + `show_links` に各配信先 URL
 
 ## 最終更新

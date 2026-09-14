@@ -11,7 +11,7 @@ GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込�
 ## 次にやること
 
 - [ ] **Cloudflare Pages へ引っ越し**（2026-09-14 所有者決定）: 受け口のコード・表・設定は commit 済み（フォームは準備中のまま）。
-      残り = ① D1 `otayori` を作って表を作り `wrangler.toml` の D1 の行を有効に ② Pages プロジェクト作成（所有者、Git 連携）
+      ① D1 `otayori` 作成済み（番組用アカウント、APAC、表も作成済み、2026-09-14）。残り = ② Pages プロジェクト作成（所有者、Git 連携）
       ③ Turnstile のウィジェットと秘密鍵（所有者）→ サイトキーを `data/site.yaml` に ④ `otayori.enabled: true` にして本番で送信確認
       ⑤ 旧 github.io を新 URL への転送ページに ⑥ README などの URL を更新 ⑦ 溜まったお便りを読む道具
 - [ ] 配信開始後: `data/episodes.yaml` に第 1 回を追記 + `show_links` に各配信先 URL

@@ -3,8 +3,8 @@ name = "space-rock-diner"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = "docs"   # 生成物を commit 済みなので、Cloudflare 側のビルドは不要
 
-# お便りの保存先。D1 を作ったら id を入れて有効にする (id は秘密ではない)
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "otayori"
-# database_id = ""
+# お便りの保存先 (番組用アカウントの D1、2026-09-14 作成、APAC)。id は秘密ではない
+[[d1_databases]]
+binding = "DB"
+database_name = "otayori"
+database_id = "66f25c25-561f-40f8-bf04-172e2dbed3b3"

@@ -14,6 +14,13 @@
 # show_links: 各配信先の「番組ページ」URL (key は上と同じ)。空の配信先は
 # サイトに「準備中」と表示され、URL を入れると自動でリンクに変わる。
 
-show_links: {}
+show_links:
+  listen: "https://listen.style/p/space-rock-diner"
 
-episodes: []
+episodes:
+  - number: 1
+    title: "第1回 石は銀河を二十周した（2026.8.17 収録 1/3）"
+    date: 2026-09-21
+    description: "何十億年も黙っていた石が、いちばん気の長い検出器だった。好きなポッドキャストの話、オダキンの近況、そしてニュートリノは一回置いておく。"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep1"

@@ -400,7 +400,7 @@ def render() -> str:
                 for r in (e.get("references") or [])
             )
             blocks.append(
-                '    <div class="episode">\n'
+                f'    <div class="episode" id="ep{e["number"]}">\n'
                 f'      <div class="ep-meta">#{e["number"]} ・ {esc(str(e.get("date", "")))}</div>\n'
                 f'      <div class="ep-title">{esc(e["title"])}</div>\n'
                 f'      <div class="ep-desc">{esc(e.get("description", ""))}</div>\n'

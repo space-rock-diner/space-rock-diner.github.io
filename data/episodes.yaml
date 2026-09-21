@@ -6,8 +6,9 @@
 #   date:        配信日 YYYY-MM-DD
 #   description: 紹介文 (サイト表示用。所有者の文体運用に従って書く)
 #   links:       配信先 URL (key = listen / spotify / apple / amazon / youtube、無いものは省略)
-#   references:  この回に出てきたもの (list of {label, url})。話題にした番組・作品・
-#                研究会・講演などへのリンク。Amazon は tracking param なしの /dp/ASIN 形
+#   references:  この回に出てきたもの (list of {label, url})。話で取り上げた番組・作品・講演への
+#                リンクだけ。解説 (Wikipedia 等)・関連の記事や論文・ついでに名前が出ただけの施設は
+#                入れない (所有者判断)。Amazon は tracking param なしの /dp/ASIN 形
 #
 # episodes は新しい順に表示される (build.py が number 降順 sort)。
 #
@@ -24,3 +25,9 @@ episodes:
     description: "何十億年も黙っていた石が、いちばん気の長い検出器だった。好きなポッドキャストの話、オダキンの近況、そしてニュートリノは一回置いておく。"
     links:
       listen: "https://listen.style/p/space-rock-diner/ep1"
+    references:
+      - {label: "どうせ死ぬ三人", url: "https://open.spotify.com/show/5aK5ee7u4FG0CpAQG92O6Q"}
+      - {label: "のらじお", url: "https://open.spotify.com/show/3TuK58U8pNEiDwiM6xJIRm"}
+      - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
+      - {label: "研究会で聞いた講演: 古い鉱物に残った傷で重い未知の粒子を探す（TAICO）", url: "https://indico.global/event/15770/contributions/162008/"}
+      - {label: "翌週の研究会でのオダキンの講演: ニュートリノ振動はいつ立ち上がるか（PPP2026、スライドあり）", url: "https://indico.yukawa.kyoto-u.ac.jp/event/95/contributions/2155/"}

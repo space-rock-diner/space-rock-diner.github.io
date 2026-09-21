@@ -17,6 +17,8 @@
 
 show_links:
   listen: "https://listen.style/p/space-rock-diner"
+  spotify: "https://open.spotify.com/show/7zJDMzXoPfC7NSTir6pgj9"
+  amazon: "https://music.amazon.co.jp/podcasts/a91e5a5b-60b2-496e-8cf0-e18f2ef0234c"
 
 episodes:
   - number: 1

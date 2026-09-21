@@ -2,31 +2,14 @@
 
 ## Status
 
-**2026-09-14 Cloudflare Pages へ引っ越し**（DESIGN.md）。
-
-2026-08-18 リポ新設。サイト骨格（番組紹介・出演・エピソード一覧・配信先）を
-GitHub Pages で公開。エピソードはまだ 0 件（「ただいま仕込み中。」表示）、
-配信先はすべて「準備中」表示。
-
-2026-09-14 ヘッダーの絵（3 画風）とお便りコーナーを実装。画風はレトロ・ステッカーに決定（他の 2 つも残す）。お便りは受け取り先が未設定なので「準備中」表示で公開。
+公開中 = https://space-rock-diner.pages.dev/ （Cloudflare Pages。旧 github.io は転送ページ）。エピソードは配信先で公開されると
+自動で追記される（CLAUDE.md §更新手順）。各回に「この回に出てきたもの」と `#ep<番号>` の目印。配信先 = LISTEN・Spotify・Amazon Music。
+お便りコーナー稼働中（Turnstile つき）。過去の状態と更新記録 = [`SESSION-archive.md`](SESSION-archive.md)。
 
 ## 次にやること
 
-- [x] **Cloudflare Pages へ引っ越し**（2026-09-14）: 番組用アカウントに Pages（GitHub 連携）+ D1 `otayori`。
-      公開 URL = https://space-rock-diner.pages.dev/ 、旧 github.io は `gh-pages` ブランチの転送ページ。お便りフォーム有効化
-- [x] **Turnstile**（2026-09-15、CLI で作成・秘密鍵を Pages に登録・受け口とページを配線）。本番で確認済み = トークン無し・偽トークンは拒否。
-      人間のブラウザから本物の確認を通した送信 → 保存を確認（2026-09-15）。未確認 = 同じトークンの使い回し拒否（Cloudflare 側の仕組み）
-- [x] 溜まったお便りを読む道具 = 企画リポ（非公開）の `scripts/read-otayori.py`
-- [ ] 配信開始後: `data/episodes.yaml` に第 1 回を追記 + `show_links` に各配信先 URL
+- [ ] Apple Podcasts と YouTube の番組ページが開くようになったら `data/episodes.yaml` の `show_links` に足す（所有者側の TODO が知らせる）
 
 ## 最終更新
 
-2026-09-14d — 本文の上限を 65535 字から 20,000 字（原稿用紙 50 枚、所有者判断）に。
-2026-09-14c — 本文欄に「あと ○○ 字」を打つたびに表示（残り 1000 字未満で赤）、書いた分だけ欄が伸びる（CSS の field-sizing が効かないブラウザ向けに JS でも伸ばす）、「改行もそのまま届きます」を添えた。フッターに「文責　クロード」（所有者の依頼）。デスクトップと 375 px 幅で確認。
-2026-09-14b — お便りの受け口を Cloudflare Pages Functions + D1 で実装（`functions/` `schema.sql` `wrangler.toml`）。ローカルの wrangler で確認: 65535 字ちょうど = 保存 / 1 字超過・絵文字で超過 = 拒否、Turnstile テスト鍵で通過・拒否、JS 無しの送信 = トップへ転送、画面のボタンから送信 → 保存 → 完了表示。本文上限は所有者案の 65535 字。
-2026-09-14 — 絵を `art/marks.py`（SVG、3 画風）に、お便りコーナー（航空便のはがき型、
-入力はラジオネームと本文だけ）を `build.py` に追加。宛先アドレスを出さないため送信先は Google フォームに変更。設計の理由は DESIGN.md。
-確かめたこと: デスクトップ幅と 375 px 幅で表示崩れなし・横スクロールなし、話題の切手がランダムに 1 つ出る、
-未入力で送るとエラー表示と本文欄へのフォーカス、入力ありで 2 項目が設定した entry 名で送信先に POST され
-完了表示と入力欄のクリア（ローカルの受け口で確認）、コンソールエラーなし。
-2026-08-18 — 初版 scaffold + Pages 公開。
+2026-09-22 — 第 1 回の「この回に出てきたもの」、各回の目印、Spotify・Amazon Music の番組リンク。SESSION を縮めて旧分は SESSION-archive.md へ。

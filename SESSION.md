@@ -3,7 +3,7 @@
 ## Status
 
 公開中 = https://space-rock-diner.pages.dev/ （Cloudflare Pages。旧 github.io は転送ページ）。エピソードは配信先で公開されると
-自動で追記される（CLAUDE.md §更新手順）。各回に「この回に出てきたもの」と `#ep<番号>` の目印。配信先 = LISTEN・Spotify・Amazon Music。
+自動で追記される（CLAUDE.md §更新手順）。 各回に「この回に出てきたもの」と `#ep<番号>` の目印。配信先 = LISTEN・Spotify・Amazon Music。
 お便りコーナー稼働中（Turnstile つき）。過去の状態と更新記録 = [`SESSION-archive.md`](SESSION-archive.md)。
 
 ## 次にやること

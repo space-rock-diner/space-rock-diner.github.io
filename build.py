@@ -1,27 +1,36 @@
 #!/usr/bin/env python3
-"""data/ から docs/index.html を生成する静的サイトビルダー。
+"""data/ から公式サイト (docs/) を生成する静的サイトビルダー。
+
+生成物:
+    docs/index.html            トップ (聴く / この番組 / 出演 / 最新の回 / これまでの回 / お便り)
+    docs/ep/<番号>/index.html  回ごとのページ (紹介文 / 聴く / この回に出てきたもの / その回へのお便り / 前後の回)
+    docs/favicon.svg ほか      タブの絵と、static/ から写す画像 (SNS のカード・ホーム画面のアイコン)
 
 使い方:
-    python3 build.py        # docs/index.html を再生成
+    python3 build.py          # docs/ を再生成 (data から消えた回のページも消す)
     python3 build.py --check  # 生成物が data と同期しているか検査 (CI / 手元確認用)
 
-設計 (DESIGN.md 参照): 外部依存は PyYAML のみ、テンプレートは本 file 内に持つ
-(サイト 1 ページ + 将来もエピソード一覧が伸びるだけなので、フレームワークは使わない)。
+設計 (DESIGN.md 参照): 外部依存は PyYAML のみ、テンプレートは本 file 内に持つ。
 絵は art/marks.py が SVG 文字列で返し、ここでページに埋め込む (外部ファイルを読み込まない)。
+配信先の紹介文には過去に `/#ep<番号>` の形でリンクを書いたので、トップはその形を回のページへ転送する。
 公開ページの文面を変えるときは所有者の文体運用に従う。
 """
 
 from __future__ import annotations
 
+import re
+import shutil
 import sys
 from pathlib import Path
 
 import yaml
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "docs" / "index.html"
+DOCS = ROOT / "docs"
 sys.path.insert(0, str(ROOT / "art"))
 import marks  # noqa: E402
+
+SITE_NAME = "オダキンカワヤンの宇宙ロック食堂"
 
 PLATFORMS = [
     ("listen", "LISTEN"),
@@ -34,26 +43,22 @@ PLATFORMS = [
 # お便りの切手に出す絵 (開くたびにどれか 1 つ)
 STAMP_ART = ["ufo", "bass", "curry"]
 
-TEMPLATE = """<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>オダキンカワヤンの宇宙ロック食堂</title>
-<meta name="description" content="素粒子・宇宙・ロック・カレーのポッドキャスト。専門家に素人が聞き、素人に専門家が聞く。">
-<meta property="og:title" content="オダキンカワヤンの宇宙ロック食堂">
-<meta property="og:description" content="素粒子・宇宙・ロック・カレーのポッドキャスト">
-<meta property="og:type" content="website">
-<style>
-:root {
+# 手で置く静的ファイル (static/ → docs/ にそのまま写す)。カバー画像は番組のアートワークを縮めたもの
+STATIC = ROOT / "static"
+OG_IMAGE = "artwork-1200.jpg"   # SNS のカード (og:image)
+
+# トップの「これまでの回」で見せる数 (それより前はたたむ)
+PAST_SHOWN = 5
+
+STYLE = """:root {
   --bg: #faf6ec;
   --bg2: #f1e9d6;
   --text: #33302b;
-  --dim: #85806f;
-  --dim-strong: #6b6657;
+  --dim: #6e6959;         /* 背景のいちばん濃いところでも 4.5:1 (WCAG AA、小さい字) */
+  --dim-strong: #5c5749;
   --accent: #d9731a;
   --accent-ink: #b4540f;
-  --accent2: #1f7a70;
+  --accent2: #1b6d64;     /* リンク色。同上 */
   --line: #e0d7c0;
   --card: #fffdf7;
   --paper: #fffdf7;
@@ -94,19 +99,8 @@ blockquote.intro p + p { margin-top: 1em; }
 .host p { color: var(--dim); font-size: .92rem; margin-top: .3rem; }
 .episode { border-bottom: 1px dashed var(--line); padding: 1.2rem 0; }
 .episode:last-child { border-bottom: none; }
-.ep-meta { color: var(--dim); font-size: .85rem; letter-spacing: .08em; }
-.ep-title { font-size: 1.15rem; font-weight: 700; margin: .2rem 0 .5rem; }
 .ep-desc { color: var(--text); font-size: .95rem; }
-.ep-links { margin-top: .6rem; font-size: .88rem; }
-.ep-links a { margin-right: 1.1em; }
-.ep-refs { margin-top: .6rem; font-size: .86rem; color: var(--dim); line-height: 1.8; }
-.ep-refs a { margin-right: .9em; white-space: nowrap; }
 .empty { color: var(--dim); text-align: center; padding: 1.5rem 0; letter-spacing: .1em; }
-.platforms { display: flex; flex-wrap: wrap; gap: .7rem; }
-.platform {
-  border: 1px solid var(--line); border-radius: 999px; padding: .35rem 1.1rem;
-  font-size: .9rem; color: var(--dim); background: var(--card);
-}
 a { color: var(--accent2); text-decoration: none; }
 a:hover { text-decoration: underline; }
 footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5rem; letter-spacing: .1em; }
@@ -124,6 +118,7 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .postcard-inner {
   position: relative; background: var(--paper); border-radius: 11px;
   padding: var(--gap); display: grid; gap: 1.35rem;
+  grid-template-columns: minmax(0, 1fr);   /* 中身 (確認欄など) の最小幅で、はがきの外へ押し広げない */
 }
 .postcard-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
 .address { padding-top: .3rem; line-height: 1.5; }
@@ -206,6 +201,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 .postcard.sent .status { color: var(--accent2); font-weight: 700; }
 .status code { font-family: inherit; color: var(--text); background: #f3ecdc; padding: .05rem .4rem; border-radius: 6px; user-select: all; }
 @media (max-width: 480px) {
+  main { padding-left: 1rem; padding-right: 1rem; }
+  /* 確認欄 (Turnstile) の flexible は幅 300px 以上が要る。375px の画面でもそれが入る余白にする */
+  .postcard { --gap: clamp(.75rem, 3.2vw, 1.9rem); }
   .stamp { width: 66px; height: 78px; }
   .stamp-art { width: 44px; }
   .postmark { display: none; }
@@ -213,89 +211,84 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
 }
-</style>
-</head>
-<body>
-<main>
-  <header>
-    <div class="mark">%%MARK%%</div>
-    <h1>オダキンカワヤンの<br>宇宙ロック食堂</h1>
-    <p class="tagline">素粒子・宇宙・ロック・カレーのポッドキャスト</p>
-  </header>
 
-  <section>
-    <h2>この番組</h2>
-    <blockquote class="intro">
-      <p>素粒子って何ですか？宇宙はどこまで続くんですか？<br>
-      カレー屋でありベーシストでもあるカワヤンが、物理研究者のオダキンに聞きます。</p>
-      <p>逆に、このベースラインの気持ちよさって何ですか？スパイスってなんであんなに合わさるんですか？<br>
-      物理研究者のオダキンが、カワヤンに聞きます。</p>
-      <p>専門家に素人が聞き、素人に専門家が聞く。<br>
-      オダキンカワヤンの宇宙ロック食堂、はじまります。</p>
-    </blockquote>
-  </section>
+/* ---- 見出しの改行 (日本語は文節で、行の長さは揃える) ---- */
+h1, .tagline, .ep-h1, .ep-title, .past a { word-break: auto-phrase; text-wrap: balance; }
+.lead { word-break: auto-phrase; }   /* <br> で切ってある短い文。balance すると短い行が生まれる。長い本文は文節で切らない (行末がそろわなくなる) */
+p { text-wrap: pretty; }
+a:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; border-radius: 4px; }
 
-  <section>
-    <h2>出演</h2>
-    <div class="hosts">
-      <div class="host"><b>オダキン</b><p>素粒子・宇宙の物理研究者</p></div>
-      <div class="host"><b>カワヤン</b><p>カレー屋、そしてベーシスト</p></div>
-    </div>
-  </section>
+/* ---- 聴く (配信先のボタン) ---- */
+.listen { margin-top: 1.8rem; display: grid; justify-items: center; gap: .6rem; }
+.listen-label { font-size: .8rem; letter-spacing: .3em; color: var(--dim-strong); }
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
+.chip {
+  display: inline-flex; align-items: center; min-height: 44px; padding: .4rem 1.2rem;
+  border: 1.5px solid var(--accent2); border-radius: 999px; background: var(--card);
+  color: var(--accent2); font-size: .92rem; font-weight: 700; letter-spacing: .04em;
+  transition: background-color .2s, color .2s;
+}
+.chip:hover { background: var(--accent2); color: #fff; text-decoration: none; }
+.soon { font-size: .8rem; color: var(--dim); }
+.ep-page .listen { justify-items: start; }
+.ep-page .chips { justify-content: flex-start; }
 
-  <section>
-    <h2>エピソード</h2>
-%%EPISODES%%
-  </section>
+/* ---- 最新の回・これまでの回 ---- */
+.ep-date { color: var(--dim); font-size: .85rem; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+h3.ep-title { font-size: 1.15rem; font-weight: 700; line-height: 1.6; margin: .2rem 0 .5rem; }
+h3.ep-title a { color: inherit; }
+.player { display: block; width: 100%; height: 178px; border: 0; margin-top: 1rem; border-radius: 12px; background: var(--card); }
+.more { margin-top: .9rem; font-size: .92rem; }
+.past { list-style: none; }
+.past li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 1px dashed var(--line); }
+.past li:last-child { border-bottom: none; }
+.past a { flex: 1; padding: .7rem 0; font-size: .95rem; }
+.past .ep-date { flex: none; }
+details.all { margin-top: .4rem; }
+details.all summary { cursor: pointer; color: var(--accent2); font-size: .9rem; padding: .6rem 0; }
 
-  <section id="otayori" aria-labelledby="otayori-h">
-    <h2 id="otayori-h">お便り</h2>
-    <p class="lead">聞きたいこと、言いたいこと、どうでもいいこと。<br>ふたりで読んで、ふたりで考えます。</p>
-    <form class="postcard" id="otayori-form" %%FORM_ATTRS%% novalidate>
-      <div class="postcard-inner">
-        <div class="postcard-head">
-          <p class="address"><small>TO</small><b>宇宙ロック食堂</b><span>オダキン・カワヤン</span></p>
-          <div class="stamp-wrap" aria-hidden="true">
-            <div class="postmark">宇宙<br>ロック<br>食堂</div>
-            <div class="stamp"><div class="stamp-face">
-%%STAMPS%%
-              <span class="stamp-price">ロック便</span>
-            </div></div>
-          </div>
-        </div>
-        <div class="field">
-          <label for="otayori-name">ラジオネーム<span class="opt">なくても大丈夫</span></label>
-          <input type="text" id="otayori-name" name="radio_name" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
-        </div>
-        <div class="field">
-          <label for="otayori-body">お便り</label>
-          <textarea id="otayori-body" name="body" required maxlength="20000" aria-describedby="otayori-hint otayori-count"></textarea>
-          <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
-          <div class="field-foot"><span id="otayori-count" aria-live="off">あと 20,000 字</span><p id="otayori-hint">本名や連絡先は書かなくて大丈夫です。<br>番組で読みあげることがあります。</p></div>
-        </div>
-        <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-%%TURNSTILE%%
-        <div class="actions">
-          <p class="status" id="otayori-status" role="status">%%STATUS%%</p>
-          <button type="submit" class="send"%%DISABLED%%>ポストに入れる
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-6-8-2Z"/><path d="m12 14 8-10"/></svg>
-          </button>
-        </div>
-      </div>
-    </form>
-  </section>
+/* ---- 回のページ ---- */
+header.sub { margin-bottom: 2.5rem; }
+header.sub a { display: inline-flex; align-items: center; gap: .9rem; color: var(--text); font-weight: 700; letter-spacing: .08em; line-height: 1.5; }
+header.sub a:hover { text-decoration: none; }
+header.sub svg { width: 110px; height: auto; flex: none; }
+.ep-h1 { font-size: 1.45rem; line-height: 1.6; font-weight: 700; letter-spacing: .04em; margin: .3rem 0 1rem; }
+.ep-page .ep-desc { font-size: 1rem; }
+.refs-list { list-style: none; display: grid; gap: .5rem; font-size: .95rem; }
+.refs-list li { padding-left: 1.1em; text-indent: -1.1em; }
+.refs-list li::before { content: "・"; color: var(--dim); }
+.ep-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 3.5rem; font-size: .9rem; }
+.ep-nav a { border: 1px solid var(--line); border-radius: 10px; padding: .8rem 1rem; background: var(--card); line-height: 1.6; }
+.ep-nav a:hover { text-decoration: none; border-color: var(--accent2); }
+.ep-nav small { display: block; color: var(--dim-strong); font-size: .76rem; letter-spacing: .1em; }
+.ep-nav .next { grid-column: 2; text-align: right; }
+.back { text-align: center; margin-top: 3rem; font-size: .9rem; }
 
-  <section>
-    <h2>配信先</h2>
-    <div class="platforms">
-%%PLATFORMS%%
-    </div>
-  </section>
+/* ---- お便りの宛先 (回のページだけ) ---- */
+fieldset.about { border: 0; display: grid; }
+fieldset.about legend { font-weight: 700; font-size: .95rem; letter-spacing: .08em; margin-bottom: .55rem; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.seg label {
+  display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .4rem .8rem;
+  border: 1.5px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer;
+  font-size: .92rem; text-align: center; line-height: 1.4; transition: border-color .2s, background-color .2s;
+}
+.seg input { accent-color: var(--accent2); flex: none; }
+.seg label:has(input:checked) { border-color: var(--accent2); background: color-mix(in oklab, var(--accent2) 8%, #fff); font-weight: 700; }
+.seg label:has(input:focus-visible) { outline: 3px solid var(--accent2); outline-offset: 2px; }
 
-  <footer>© 2026 オダキンカワヤンの宇宙ロック食堂<br><span class="credit">文責　クロード</span></footer>
-</main>
-<script>
-(() => {
+@media (max-width: 480px) {
+  .past li { flex-direction: column; gap: 0; }
+  .past a { padding-bottom: 0; }
+  .past .ep-date { padding-bottom: .6rem; }
+  .ep-nav { grid-template-columns: 1fr; }
+  .ep-nav .next { grid-column: 1; }
+  .seg { grid-template-columns: 1fr; }
+  .seg label { justify-content: flex-start; }
+}
+"""
+
+SCRIPT = """(() => {
   const form = document.getElementById("otayori-form");
   const arts = form.querySelectorAll(".stamp-art");
   if (arts.length > 1) {
@@ -356,10 +349,9 @@ footer { text-align: center; color: var(--dim); font-size: .82rem; margin-top: 5
     }
   });
 })();
-</script>
-</body>
-</html>
 """
+
+FOOTER = """  <footer>© 2026 オダキンカワヤンの宇宙ロック食堂<br><span class="credit">文責　クロード</span></footer>"""
 
 
 def esc(s: str) -> str:
@@ -378,53 +370,80 @@ def art(style: str, key: str, uid: str) -> str:
     return marks.scoped(svg, uid)
 
 
-def render() -> str:
-    data = load("episodes.yaml")
-    site = load("site.yaml")
-    style = site.get("mark_style") or "sticker"
-    if style not in {k for k, _, _ in marks.STYLES}:
-        raise SystemExit(f"❌ data/site.yaml の mark_style が不明: {style}")
-    episodes = sorted(data.get("episodes") or [], key=lambda e: e.get("number", 0), reverse=True)
+def ep_path(e: dict) -> str:
+    return f"/ep/{int(e['number'])}/"
 
-    if not episodes:
-        eps_html = '    <p class="empty">ただいま仕込み中。</p>'
-    else:
-        blocks = []
-        for e in episodes:
-            links = "".join(
-                f'<a href="{esc(e["links"][key])}">{label}</a>'
-                for key, label in PLATFORMS if key in (e.get("links") or {})
-            )
-            refs = "".join(
-                f'<a href="{esc(r["url"])}">{esc(r["label"])}</a>'
-                for r in (e.get("references") or [])
-            )
-            blocks.append(
-                f'    <div class="episode" id="ep{e["number"]}">\n'
-                f'      <div class="ep-meta">#{e["number"]} ・ {esc(str(e.get("date", "")))}</div>\n'
-                f'      <div class="ep-title">{esc(e["title"])}</div>\n'
-                f'      <div class="ep-desc">{esc(e.get("description", ""))}</div>\n'
-                + (f'      <div class="ep-links">{links}</div>\n' if links else "")
-                + (f'      <div class="ep-refs">この回に出てきたもの: {refs}</div>\n' if refs else "")
-                + "    </div>"
-            )
-        eps_html = "\n".join(blocks)
 
-    # 配信先: episodes に 1 つでも URL があればリンク化、無ければ「準備中」表示
-    all_links: dict[str, str] = {}
-    for e in episodes:
-        for key, url in (e.get("links") or {}).items():
-            all_links.setdefault(key, url)
-    all_links = {**all_links, **(data.get("show_links") or {})}
+def ep_date(e: dict) -> str:
+    """2026-09-23 → 2026年9月23日 (表示用)。"""
+    d = str(e.get("date", ""))
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", d)
+    return f"{m[1]}年{int(m[2])}月{int(m[3])}日" if m else d
 
-    plat_html = "\n".join(
-        (f'      <a class="platform" href="{esc(all_links[key])}">{label}</a>'
-         if key in all_links else
-         f'      <span class="platform">{label}（準備中）</span>')
-        for key, label in PLATFORMS
+
+def player(e: dict, site: dict) -> str:
+    """LISTEN の埋め込みプレーヤー (LISTEN の oEmbed が返す形 = <回の URL>/player、高さ 178px)。
+    ページを離れずに聴ける。site.yaml の listen_player が true のときだけ、LISTEN の URL がある回に出す。
+    選べるのは色 (theme = auto / light / dark) だけで、プレーヤーには LISTEN の文字起こしの抜粋も出る。"""
+    url = str((e.get("links") or {}).get("listen") or "")
+    if site.get("listen_player") is not True or not re.fullmatch(r"https://listen\.style/p/[^/?#]+/[^/?#]+", url):
+        return ""
+    return (f'      <iframe class="player" src="{esc(url)}/player?theme=light" title="{esc(e["title"])}（LISTEN のプレーヤー）"'
+            ' loading="lazy" scrolling="no"></iframe>\n')
+
+
+def head(*, title: str, desc: str, og_title: str, og_desc: str, url: str, og_type: str, base: str,
+         extra: str = "") -> str:
+    return (
+        "<!DOCTYPE html>\n"
+        '<html lang="ja">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f"<title>{esc(title)}</title>\n"
+        f'<meta name="description" content="{esc(desc)}">\n'
+        f'<link rel="canonical" href="{esc(url)}">\n'
+        '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n'
+        f'<meta property="og:title" content="{esc(og_title)}">\n'
+        f'<meta property="og:description" content="{esc(og_desc)}">\n'
+        f'<meta property="og:type" content="{og_type}">\n'
+        f'<meta property="og:url" content="{esc(url)}">\n'
+        f'<meta property="og:site_name" content="{SITE_NAME}">\n'
+        f'<meta property="og:image" content="{esc(base)}{OG_IMAGE}">\n'
+        f'<meta property="og:image:alt" content="{SITE_NAME}のカバー画像">\n'
+        '<meta name="twitter:card" content="summary">\n'
+        f"{extra}"
+        f"<style>\n{STYLE}</style>\n"
+        "</head>\n"
     )
 
-    # お便り
+
+def show_links(episodes: list[dict], data: dict) -> dict[str, str]:
+    # 番組ページの URL。show_links が無い配信先は、どれかの回にその配信先の URL があればそれを使う
+    links: dict[str, str] = {}
+    for e in episodes:
+        for key, url in (e.get("links") or {}).items():
+            links.setdefault(key, url)
+    return {**links, **(data.get("show_links") or {})}
+
+
+def listen_block(links: dict[str, str], label: str) -> str:
+    """配信先のボタン。聴ける配信先だけをボタンにし、まだの配信先は 1 行の注記にまとめる
+    (押せないものをボタンの形で並べない)。"""
+    chips = "\n".join(f'        <a class="chip" href="{esc(links[k])}">{name}</a>'
+                      for k, name in PLATFORMS if k in links)
+    soon = "・".join(name for k, name in PLATFORMS if k not in links)
+    return ('    <div class="listen">\n'
+            f'      <span class="listen-label">{label}</span>\n'
+            f'      <div class="chips">\n{chips}\n      </div>\n'
+            + (f'      <span class="soon">{soon} は準備中</span>\n' if soon else "")
+            + "    </div>")
+
+
+def otayori_section(site: dict, style: str, ep: dict | None = None) -> str:
+    """お便りのはがき。ep を渡すと宛先を 2 択で選べる (最初は「第N回について」)。
+    「番組へ」を選ぶと回を決めずに届く = トップの欄と同じ。回の番号は name="episode" で受け口に渡る (番組へ = 空)。"""
     ot = site.get("otayori") or {}
     stamps = "\n".join(
         f'          <span class="stamp-art">{art(style, key, f"stamp-{key}")}</span>' for key in STAMP_ART
@@ -436,37 +455,261 @@ def render() -> str:
         turnstile = (f'        <div id="otayori-turnstile" data-sitekey="{esc(sitekey)}"></div>\n'
                      '        <script>window.otayoriTurnstileReady = () => { const el = document.getElementById("otayori-turnstile");'
                      ' window.otayoriWidgetId = window.turnstile.render(el, { sitekey: el.dataset.sitekey, action: "otayori",'
-                     ' theme: "light", size: "flexible" }); };</script>\n'
-                     '        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=otayoriTurnstileReady" async defer></script>')
+                     ' theme: "light", size: el.clientWidth >= 300 ? "flexible" : "compact" }); };</script>\n'
+                     '        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=otayoriTurnstileReady" async defer></script>\n')
     if ot.get("enabled") is True:
         form_attrs = 'data-ready="1" action="/api/otayori" method="post"'
         status, disabled = "", ""
     else:
         form_attrs, status, disabled = 'data-ready="0"', "ただいま準備中。もうすぐポストを置きます。", " disabled"
+    about = ""
+    if ep is not None:
+        n = int(ep["number"])
+        about = ('        <fieldset class="about">\n'
+                 '          <legend>どれへのお便り？</legend>\n'
+                 '          <div class="seg">\n'
+                 f'            <label><input type="radio" name="episode" value="{n}" checked>第{n}回について</label>\n'
+                 '            <label><input type="radio" name="episode" value="">番組へ（回は決めない）</label>\n'
+                 '          </div>\n'
+                 '        </fieldset>\n')
+    return f"""  <section id="otayori" aria-labelledby="otayori-h">
+    <h2 id="otayori-h">お便り</h2>
+    <p class="lead">聞きたいこと、言いたいこと、どうでもいいこと。<br>ふたりで読んで、ふたりで考えます。</p>
+    <form class="postcard" id="otayori-form" {form_attrs} novalidate>
+      <div class="postcard-inner">
+        <div class="postcard-head">
+          <p class="address"><small>TO</small><b>宇宙ロック食堂</b><span>オダキン・カワヤン</span></p>
+          <div class="stamp-wrap" aria-hidden="true">
+            <div class="postmark">宇宙<br>ロック<br>食堂</div>
+            <div class="stamp"><div class="stamp-face">
+{stamps}
+              <span class="stamp-price">ロック便</span>
+            </div></div>
+          </div>
+        </div>
+{about}        <div class="field">
+          <label for="otayori-name">ラジオネーム<span class="opt">なくても大丈夫</span></label>
+          <input type="text" id="otayori-name" name="radio_name" maxlength="40" autocomplete="off" placeholder="例：土星の輪でナンを焼く人">
+        </div>
+        <div class="field">
+          <label for="otayori-body">お便り</label>
+          <textarea id="otayori-body" name="body" required maxlength="20000" aria-describedby="otayori-hint otayori-count"></textarea>
+          <p class="field-error" id="otayori-error" hidden>ひとことだけでも書いてください。</p>
+          <div class="field-foot"><span id="otayori-count" aria-live="off">あと 20,000 字</span><p id="otayori-hint">本名や連絡先は書かなくて大丈夫です。<br>番組で読みあげることがあります。</p></div>
+        </div>
+        <div class="hp" aria-hidden="true"><label>空けておいてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+{turnstile}        <div class="actions">
+          <p class="status" id="otayori-status" role="status">{status}</p>
+          <button type="submit" class="send"{disabled}>ポストに入れる
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-6-8-2Z"/><path d="m12 14 8-10"/></svg>
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>"""
 
-    return (TEMPLATE
-            .replace("%%MARK%%", marks.scoped(marks.mark(style), "mark"))
-            .replace("%%EPISODES%%", eps_html)
-            .replace("%%STAMPS%%", stamps)
-            .replace("%%FORM_ATTRS%%", form_attrs)
-            .replace("%%TURNSTILE%%", turnstile)
-            .replace("%%STATUS%%", status)
-            .replace("%%DISABLED%%", disabled)
-            .replace("%%PLATFORMS%%", plat_html))
+
+def render_index(episodes: list[dict], data: dict, site: dict, style: str, base: str) -> str:
+    # 配信先の紹介文に書いた /#ep<番号> を、その回のページへ移す (描画の前に head で行う)
+    nums = ",".join(str(int(e["number"])) for e in episodes)
+    redirect = ("<script>(() => { const m = location.hash.match(/^#ep([0-9]+)$/);"
+                f" if (m && [{nums}].includes(Number(m[1]))) location.replace(`/ep/${{m[1]}}/`); }})();</script>\n")
+
+    if not episodes:
+        latest_html = '    <p class="empty">ただいま仕込み中。</p>'
+    else:
+        e = episodes[0]
+        latest_html = (
+            f'    <article class="episode" id="ep{int(e["number"])}">\n'
+            f'      <div class="ep-date">{ep_date(e)}</div>\n'
+            f'      <h3 class="ep-title"><a href="{ep_path(e)}">{esc(e["title"])}</a></h3>\n'
+            f'      <p class="ep-desc">{esc(e.get("description", ""))}</p>\n'
+            + player(e, site)
+            + f'      <p class="more"><a href="{ep_path(e)}">この回のページへ（出てきたもののリンク・この回へのお便り）</a></p>\n'
+            + "    </article>"
+        )
+
+    # これまでの回: 新しい 5 回は見せ、それより前はたたむ (最新の回のすぐ下に置き、回の一覧をひとかたまりにする)
+    past = episodes[1:]
+    past_html = ""
+    if past:
+        def items(es: list[dict]) -> str:
+            return "\n".join(f'      <li><a href="{ep_path(e)}">{esc(e["title"])}</a>'
+                             f'<span class="ep-date">{ep_date(e)}</span></li>' for e in es)
+        shown, folded = past[:PAST_SHOWN], past[PAST_SHOWN:]
+        past_html = ("\n\n  <section>\n"
+                     "    <h2>これまでの回</h2>\n"
+                     f'    <ol class="past">\n{items(shown)}\n    </ol>\n'
+                     + (f'    <details class="all">\n      <summary>それより前の回（{len(folded)} 回）</summary>\n'
+                        f'      <ol class="past">\n{items(folded)}\n      </ol>\n    </details>\n' if folded else "")
+                     + "  </section>")
+
+    return (
+        head(title=SITE_NAME,
+             desc="素粒子・宇宙・ロック・カレーのポッドキャスト。専門家に素人が聞き、素人に専門家が聞く。",
+             og_title=SITE_NAME, og_desc="素粒子・宇宙・ロック・カレーのポッドキャスト",
+             url=base, og_type="website", base=base, extra=redirect)
+        + f"""<body>
+<main>
+  <header>
+    <div class="mark">{marks.scoped(marks.mark(style), "mark")}</div>
+    <h1>オダキンカワヤンの<br>宇宙ロック食堂</h1>
+    <p class="tagline">素粒子・宇宙・ロック・カレーのポッドキャスト</p>
+{listen_block(show_links(episodes, data), "聴く")}
+  </header>
+
+  <section>
+    <h2>この番組</h2>
+    <blockquote class="intro">
+      <p>素粒子って何ですか？宇宙はどこまで続くんですか？<br>
+      カレー屋でありベーシストでもあるカワヤンが、物理研究者のオダキンに聞きます。</p>
+      <p>逆に、このベースラインの気持ちよさって何ですか？スパイスってなんであんなに合わさるんですか？<br>
+      物理研究者のオダキンが、カワヤンに聞きます。</p>
+      <p>専門家に素人が聞き、素人に専門家が聞く。<br>
+      オダキンカワヤンの宇宙ロック食堂、はじまります。</p>
+    </blockquote>
+  </section>
+
+  <section>
+    <h2>出演</h2>
+    <div class="hosts">
+      <div class="host"><b>オダキン</b><p>素粒子・宇宙の物理研究者</p></div>
+      <div class="host"><b>カワヤン</b><p>カレー屋、そしてベーシスト</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>最新の回</h2>
+{latest_html}
+  </section>{past_html}
+
+{otayori_section(site, style)}
+
+{FOOTER}
+</main>
+<script>
+{SCRIPT}</script>
+</body>
+</html>
+"""
+    )
+
+
+def render_episode(i: int, episodes: list[dict], data: dict, site: dict, style: str, base: str) -> str:
+    e = episodes[i]
+    n = int(e["number"])
+    newer = episodes[i - 1] if i > 0 else None
+    older = episodes[i + 1] if i + 1 < len(episodes) else None
+    # この回の URL がある配信先はその回へ、無い配信先は番組ページへ
+    links = {**show_links(episodes, data), **(e.get("links") or {})}
+    refs = e.get("references") or []
+    refs_html = ""
+    if refs:
+        items = "\n".join(f'      <li><a href="{esc(r["url"])}">{esc(r["label"])}</a></li>' for r in refs)
+        refs_html = ("\n\n  <section>\n"
+                     "    <h2>この回に出てきたもの</h2>\n"
+                     '    <ul class="refs-list">\n'
+                     f"{items}\n"
+                     "    </ul>\n"
+                     "  </section>")
+    nav = ""
+    if older or newer:
+        parts = []
+        if older:
+            parts.append(f'<a class="prev" href="{ep_path(older)}"><small>← 前の回</small>{esc(older["title"])}</a>')
+        if newer:
+            parts.append(f'<a class="next" href="{ep_path(newer)}"><small>次の回 →</small>{esc(newer["title"])}</a>')
+        nav = f'\n\n  <nav class="ep-nav" aria-label="前後の回">{"".join(parts)}</nav>'
+    desc = str(e.get("description", ""))
+    return (
+        head(title=f"{e['title']}｜{SITE_NAME}", desc=desc, og_title=str(e["title"]), og_desc=desc,
+             url=f"{base}ep/{n}/", og_type="article", base=base)
+        + f"""<body>
+<main>
+  <header class="sub">
+    <a href="/">{marks.scoped(marks.mark(style), "mark")}<span>オダキンカワヤンの<br>宇宙ロック食堂</span></a>
+  </header>
+
+  <article class="ep-page">
+    <div class="ep-date">{ep_date(e)}</div>
+    <h1 class="ep-h1">{esc(e["title"])}</h1>
+    <p class="ep-desc">{esc(desc)}</p>
+{player(e, site)}{listen_block(links, "アプリで聴く")}
+  </article>{refs_html}
+
+{otayori_section(site, style, e)}{nav}
+
+  <p class="back"><a href="/">番組のトップへ（すべての回）</a></p>
+
+{FOOTER}
+</main>
+<script>
+{SCRIPT}</script>
+</body>
+</html>
+"""
+    )
+
+
+def render() -> dict[Path, str | bytes]:
+    """生成するファイルの path → 中身 (ページは str、static/ から写す画像は bytes)。"""
+    data = load("episodes.yaml")
+    site = load("site.yaml")
+    style = site.get("mark_style") or "sticker"
+    if style not in {k for k, _, _ in marks.STYLES}:
+        raise SystemExit(f"❌ data/site.yaml の mark_style が不明: {style}")
+    base = str(site.get("site_url") or "").strip()
+    if not base.endswith("/"):
+        raise SystemExit("❌ data/site.yaml の site_url が無いか、末尾が / でない")
+    episodes = sorted(data.get("episodes") or [], key=lambda e: e.get("number", 0), reverse=True)
+    nums = [int(e["number"]) for e in episodes]
+    if len(set(nums)) != len(nums):
+        raise SystemExit(f"❌ data/episodes.yaml に同じ number が 2 つある: {nums}")
+    pages: dict[Path, str | bytes] = {DOCS / "index.html": render_index(episodes, data, site, style, base)}
+    for i, e in enumerate(episodes):
+        pages[DOCS / "ep" / str(int(e["number"])) / "index.html"] = render_episode(i, episodes, data, site, style, base)
+    # タブの小さな絵 = ヘッダーの 3 つの絵のうち UFO (小さくても形が分かる)
+    pages[DOCS / "favicon.svg"] = marks.icon(style, "ufo") + "\n"
+    for f in sorted(STATIC.iterdir()) if STATIC.is_dir() else []:
+        if f.is_file() and not f.name.startswith("."):
+            pages[DOCS / f.name] = f.read_bytes()
+    return pages
+
+
+def stale_episode_dirs(pages: dict[Path, str | bytes]) -> list[Path]:
+    """docs/ep/ にあるが data に無い回のページ (回を消した・番号を直したときに残るもの)。"""
+    root = DOCS / "ep"
+    if not root.is_dir():
+        return []
+    keep = {p.parent for p in pages}
+    return sorted(d for d in root.iterdir() if d.is_dir() and re.fullmatch(r"[0-9]+", d.name) and d not in keep)
 
 
 def main() -> int:
-    html = render()
+    pages = render()
+    stale = stale_episode_dirs(pages)
     if "--check" in sys.argv:
-        current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-        if current != html:
-            print("❌ docs/index.html が data と非同期 — python3 build.py で再生成してください")
+        bad = [p for p, body in pages.items()
+               if not p.exists() or (p.read_bytes() if isinstance(body, bytes) else p.read_text(encoding="utf-8")) != body]
+        if bad or stale:
+            for p in bad:
+                print(f"❌ {p.relative_to(ROOT)} が data と非同期")
+            for d in stale:
+                print(f"❌ {d.relative_to(ROOT)} は data に無い回のページ")
+            print("   → python3 build.py で再生成してください")
             return 1
-        print("✅ docs/index.html は data と同期済み")
+        print(f"✅ docs/ は data と同期済み ({len(pages)} ページ)")
         return 0
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(html, encoding="utf-8")
-    print(f"✅ generated {OUT.relative_to(ROOT)} ({len(html)} bytes)")
+    for p, body in pages.items():
+        p.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(body, bytes):
+            p.write_bytes(body)
+        else:
+            p.write_text(body, encoding="utf-8")
+    for d in stale:
+        shutil.rmtree(d)
+        print(f"🗑  {d.relative_to(ROOT)} (data に無い回)")
+    print(f"✅ generated docs/ ({len(pages)} ページ)")
     return 0
 
 

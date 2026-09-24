@@ -66,10 +66,37 @@ export async function onRequestPost({ request, env }) {
   if (!(await passesTurnstile(env, request, form.get("cf-turnstile-response")))) {
     return reply(request, 400, { ok: false, error: "turnstile" });
   }
-  await env.DB.prepare("INSERT INTO letters (created_at, radio_name, body) VALUES (?, ?, ?)")
-    .bind(new Date().toISOString(), name, body)
-    .run();
+  await saveLetter(env.DB, name, body, parseEpisode(form.get("episode")));
   return reply(request, 200, { ok: true });
+}
+
+// 回のページから「第N回について」のチェックを入れたまま送ると N が来る。無い・形が変なら回を決めない (拒否はしない)
+function parseEpisode(value) {
+  const s = (value || "").toString().trim();
+  return /^[1-9][0-9]{0,3}$/.test(s) ? Number(s) : null;
+}
+
+async function saveLetter(db, name, body, episode) {
+  const at = new Date().toISOString();
+  if (episode === null) {
+    await db.prepare("INSERT INTO letters (created_at, radio_name, body) VALUES (?, ?, ?)").bind(at, name, body).run();
+    return;
+  }
+  const insert = () => db.prepare("INSERT INTO letters (created_at, radio_name, body, episode) VALUES (?, ?, ?, ?)")
+    .bind(at, name, body, episode).run();
+  try {
+    await insert();
+  } catch (err) {
+    // episode 欄は 2026-09-24 に足した。それより前に作った D1 には欄が無いので、最初の回つきのお便りでここが足す
+    // (= 欄を足す作業を wrangler のあるマシンに頼らない。2 通が同時に来て片方が先に足しても、もう片方は重複で落ちるだけ)
+    if (!/no column named episode|no such column: episode/i.test(String(err && err.message))) throw err;
+    try {
+      await db.prepare("ALTER TABLE letters ADD COLUMN episode INTEGER").run();
+    } catch (e) {
+      if (!/duplicate column/i.test(String(e && e.message))) throw e;
+    }
+    await insert();
+  }
 }
 
 export const onRequest = ({ request }) => reply(request, 405, { ok: false, error: "method" });

@@ -15,6 +15,13 @@
 
 mark_style: sticker
 
+# site_url: 公開 URL (末尾 /)。各ページの canonical と og:url に使う
+site_url: "https://space-rock-diner.pages.dev/"
+
+# listen_player: true で、最新の回と回のページに LISTEN の埋め込みプレーヤーを出す (ページを離れずに聴ける)。
+#   LISTEN 側で選べるのは色だけで、プレーヤーには LISTEN の文字起こしの抜粋も出る (誤変換を含みうる)
+listen_player: true
+
 otayori:
   enabled: true
   turnstile_sitekey: "0x4AAAAAAEz_cJO1MzEzOfUf"   # ウィジェット「宇宙ロック食堂 お便り」(番組用アカウント、2026-09-15)

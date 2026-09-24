@@ -10,5 +10,5 @@
 
 ## 仕組み
 
-`data/episodes.yaml`（エピソード一覧）から `build.py` が `docs/index.html` を生成し、
+`data/episodes.yaml`（エピソード一覧）から `build.py` がトップと回ごとのページ（`docs/`）を生成し、
 Cloudflare Pages が `docs/` を配信する（`main` に push すると自動で公開）。お便りの受け口は `functions/`。詳細は [`DESIGN.md`](DESIGN.md)。

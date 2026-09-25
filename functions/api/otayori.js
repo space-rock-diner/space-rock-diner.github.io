@@ -44,7 +44,7 @@ async function passesTurnstile(env, request, token) {
   return result.success === true && result.action === TURNSTILE_ACTION && hostnames.has(result.hostname);
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   const origin = request.headers.get("origin");
   if (origin && new URL(origin).host !== new URL(request.url).host) {
     return reply(request, 403, { ok: false, error: "origin" });
@@ -66,8 +66,32 @@ export async function onRequestPost({ request, env }) {
   if (!(await passesTurnstile(env, request, form.get("cf-turnstile-response")))) {
     return reply(request, 400, { ok: false, error: "turnstile" });
   }
-  await saveLetter(env.DB, name, body, parseEpisode(form.get("episode")));
+  const episode = parseEpisode(form.get("episode"));
+  await saveLetter(env.DB, name, body, episode);
+  // 知らせは保存の後、返事を待たせずに送る (失敗しても手紙はもう保存されている)
+  if (env.DISCORD_WEBHOOK_URL) waitUntil(notifyDiscord(env.DISCORD_WEBHOOK_URL, name, body, episode));
   return reply(request, 200, { ok: true });
+}
+
+// 届いたお便りを Discord のチャンネルに書く (ふたりが同時に気づけるように)。URL は Pages の Secret DISCORD_WEBHOOK_URL。
+// 本文に @everyone などが書かれていても誰も呼び出さない (allowed_mentions を空に)。Discord の 1 通は 2000 字までなので長い手紙は途中まで
+const DISCORD_LIMIT = 2000;
+async function notifyDiscord(url, name, body, episode) {
+  const head = `📮 お便りが届きました（${episode === null ? "番組へ" : `第${episode}回について`}）\n` +
+    `ラジオネーム: ${name || "(なし)"}\n\n`;
+  const room = DISCORD_LIMIT - head.length;
+  const text = body.length <= room ? body : `${body.slice(0, room - 40)}\n\n（長いので途中まで。全文 ${body.length.toLocaleString("ja-JP")} 字）`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      signal: AbortSignal.timeout(10_000),
+      body: JSON.stringify({ content: head + text, allowed_mentions: { parse: [] } }),
+    });
+    if (!res.ok) console.error("otayori: Discord への知らせが失敗", res.status);
+  } catch (e) {
+    console.error("otayori: Discord への知らせが失敗", String(e && e.message));
+  }
 }
 
 // 回のページから「第N回について」のチェックを入れたまま送ると N が来る。無い・形が変なら回を決めない (拒否はしない)

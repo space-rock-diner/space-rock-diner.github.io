@@ -68,7 +68,14 @@ GitHub Pages は置いたファイルを配るだけで、お便りを受け取�
   大きくさせないための蓋（D1 の 1 行は 2 MB まで、無料枠の保存は全体で 5 GB）。当初の 65535 字（約 164 枚）から下げた
 - JavaScript が無い送信には、JSON でなくトップページへの転送を返す（ただし Turnstile を有効にすると JS 必須）
 - `data/site.yaml` の `otayori.enabled` が false のあいだは「準備中」で送信不可（2026-09-14 に true）
-- メール通知は無い: Cloudflare からメールを送るには独自ドメイン（有料）が要る。溜まったお便りは読みに行く
+- メール通知は無い: Cloudflare からメールを送るには独自ドメイン（有料）が要る。代わりに Discord に知らせる（次の項）
+- **届いたら Discord に書く（2026-09-25、所有者判断）**: 受け口が保存の後に、Pages の Secret `DISCORD_WEBHOOK_URL`
+  （ふたりのいるチャンネルの Webhook）へ「📮 お便りが届きました（第N回について / 番組へ）・ラジオネーム・本文」を送る。
+  ふたりが同時に、所有者のマシンを介さずに気づける（それまでの気づき方は所有者の家のマシンでダッシュボードを開いたときの件数だけだった）。
+  本文に `@everyone` 等があっても誰も呼び出さない（`allowed_mentions` を空に）。Discord の 1 通は 2000 字までなので長い手紙は途中まで
+  + 全文の字数。送るのは返事の後（`waitUntil`）で、Discord に届かなくても手紙は保存済み・送った人には「届いた」（log に 1 行）。
+  Secret が無いあいだは何もしない。**Secret を足した・変えたら再デプロイが要る**（Pages の Secret は次のデプロイから効く）。
+  手元の試験 = 偽の受け取り役で、文面・呼び出し無効・長文の切り詰め・受け取り役が落ちているときも保存されることを確かめた
 
 ローカルでの確かめ方: `npm i -D wrangler` → `npx wrangler d1 execute otayori --local --file=schema.sql`
 → `npx wrangler pages dev`（`wrangler.toml` の D1 の行を有効にしておく）。

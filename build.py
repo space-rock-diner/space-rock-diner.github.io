@@ -4,6 +4,7 @@
 生成物:
     docs/index.html            トップ (聴く / この番組 / 出演 / 最新の回 / これまでの回 / お便り)
     docs/ep/<番号>/index.html  回ごとのページ (紹介文 / 聴く / この回に出てきたもの / その回へのお便り / 前後の回)
+    docs/ep/index.html         すべての回 (年ごと)。トップからのリンクは回がトップに入りきらなくなってから出る
     docs/favicon.svg ほか      タブの絵と、static/ から写す画像 (SNS のカード・ホーム画面のアイコン)
 
 使い方:
@@ -47,7 +48,7 @@ STAMP_ART = ["ufo", "bass", "curry"]
 STATIC = ROOT / "static"
 OG_IMAGE = "artwork-1200.jpg"   # SNS のカード (og:image)
 
-# トップの「これまでの回」で見せる数 (それより前はたたむ)
+# トップの「これまでの回」で見せる数。これより多くなったら (= 回が増えたら自動で)、その下に「すべての回」ページへのリンクを出す
 PAST_SHOWN = 5
 
 STYLE = """:root {
@@ -244,8 +245,8 @@ h3.ep-title a { color: inherit; }
 .past li:last-child { border-bottom: none; }
 .past a { flex: 1; padding: .7rem 0; font-size: .95rem; }
 .past .ep-date { flex: none; }
-details.all { margin-top: .4rem; }
-details.all summary { cursor: pointer; color: var(--accent2); font-size: .9rem; padding: .6rem 0; }
+.year-nav { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin: -.4rem 0 .6rem; font-size: .92rem; }
+.year-nav a { display: inline-flex; align-items: center; min-height: 44px; }
 
 /* ---- 回のページ ---- */
 header.sub { margin-bottom: 2.5rem; }
@@ -372,6 +373,61 @@ def art(style: str, key: str, uid: str) -> str:
 
 def ep_path(e: dict) -> str:
     return f"/ep/{int(e['number'])}/"
+
+
+def archive_linked(episodes: list[dict]) -> bool:
+    """「すべての回」ページへリンクするか = トップの「これまでの回」に入りきらなくなったか。ページ自体はいつも作る。"""
+    return len(episodes) - 1 > PAST_SHOWN
+
+
+def past_items(es: list[dict]) -> str:
+    return "\n".join(f'      <li><a href="{ep_path(e)}">{esc(e["title"])}</a>'
+                     f'<span class="ep-date">{ep_date(e)}</span></li>' for e in es)
+
+
+def back_links(episodes: list[dict], on_archive: bool = False) -> str:
+    """ページの下の戻り道。お便りはどのページからも 1 回で辿れるようにする。"""
+    links = ['<a href="/">番組のトップへ</a>']
+    if archive_linked(episodes) and not on_archive:
+        links.append('<a href="/ep/">すべての回</a>')
+    links.append('<a href="/#otayori">番組へのお便り</a>')
+    return "　・　".join(links)
+
+
+def render_archive(episodes: list[dict], style: str, base: str) -> str:
+    """すべての回 (/ep/)。年ごとに見出しを立て、新しい順。年が 2 つ以上になったら上に年への飛び先を並べる。"""
+    years: dict[str, list[dict]] = {}
+    for e in episodes:
+        years.setdefault(str(e.get("date", ""))[:4] or "—", []).append(e)
+    nav = ""
+    if len(years) > 1:
+        nav = ('    <nav class="year-nav" aria-label="年">'
+               + "".join(f'<a href="#y{y}">{y}年</a>' for y in years) + "</nav>\n")
+    sections = "\n".join(
+        f'  <section id="y{y}">\n    <h2>{y}年</h2>\n    <ol class="past">\n{past_items(es)}\n    </ol>\n  </section>'
+        for y, es in years.items())
+    title = f"すべての回（{len(episodes)} 回）"
+    return (
+        head(title=f"すべての回｜{SITE_NAME}", desc=f"{SITE_NAME}のすべての回", og_title=f"すべての回｜{SITE_NAME}",
+             og_desc=f"{SITE_NAME}のすべての回", url=f"{base}ep/", og_type="website", base=base)
+        + f"""<body>
+<main>
+  <header class="sub">
+    <a href="/">{marks.scoped(marks.mark(style), "mark")}<span>オダキンカワヤンの<br>宇宙ロック食堂</span></a>
+  </header>
+
+  <h1 class="ep-h1">{title}</h1>
+{nav}
+{sections}
+
+  <p class="back">{back_links(episodes, on_archive=True)}</p>
+
+{FOOTER}
+</main>
+</body>
+</html>
+"""
+    )
 
 
 def ep_date(e: dict) -> str:
@@ -529,19 +585,16 @@ def render_index(episodes: list[dict], data: dict, site: dict, style: str, base:
             + "    </article>"
         )
 
-    # これまでの回: 新しい 5 回は見せ、それより前はたたむ (最新の回のすぐ下に置き、回の一覧をひとかたまりにする)
+    # これまでの回: 新しい PAST_SHOWN 回だけ (最新の回のすぐ下に置き、回の一覧をひとかたまりにする)。
+    # それより多ければ「すべての回」ページへのリンク = トップの長さは回が増えても変わらず、お便りの欄も沈まない
     past = episodes[1:]
     past_html = ""
     if past:
-        def items(es: list[dict]) -> str:
-            return "\n".join(f'      <li><a href="{ep_path(e)}">{esc(e["title"])}</a>'
-                             f'<span class="ep-date">{ep_date(e)}</span></li>' for e in es)
-        shown, folded = past[:PAST_SHOWN], past[PAST_SHOWN:]
         past_html = ("\n\n  <section>\n"
                      "    <h2>これまでの回</h2>\n"
-                     f'    <ol class="past">\n{items(shown)}\n    </ol>\n'
-                     + (f'    <details class="all">\n      <summary>それより前の回（{len(folded)} 回）</summary>\n'
-                        f'      <ol class="past">\n{items(folded)}\n      </ol>\n    </details>\n' if folded else "")
+                     f'    <ol class="past">\n{past_items(past[:PAST_SHOWN])}\n    </ol>\n'
+                     + (f'    <p class="more"><a href="/ep/">すべての回（{len(episodes)} 回）</a></p>\n'
+                        if archive_linked(episodes) else "")
                      + "  </section>")
 
     return (
@@ -639,7 +692,7 @@ def render_episode(i: int, episodes: list[dict], data: dict, site: dict, style: 
 
 {otayori_section(site, style, e)}{nav}
 
-  <p class="back"><a href="/">番組のトップへ（すべての回）</a></p>
+  <p class="back">{back_links(episodes)}</p>
 
 {FOOTER}
 </main>
@@ -668,6 +721,7 @@ def render() -> dict[Path, str | bytes]:
     pages: dict[Path, str | bytes] = {DOCS / "index.html": render_index(episodes, data, site, style, base)}
     for i, e in enumerate(episodes):
         pages[DOCS / "ep" / str(int(e["number"])) / "index.html"] = render_episode(i, episodes, data, site, style, base)
+    pages[DOCS / "ep" / "index.html"] = render_archive(episodes, style, base)
     # タブの小さな絵 = ヘッダーの 3 つの絵のうち UFO (小さくても形が分かる)
     pages[DOCS / "favicon.svg"] = marks.icon(style, "ufo") + "\n"
     for f in sorted(STATIC.iterdir()) if STATIC.is_dir() else []:

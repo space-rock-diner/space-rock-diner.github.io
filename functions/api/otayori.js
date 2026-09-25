@@ -78,8 +78,10 @@ function parseEpisode(value) {
 
 async function saveLetter(db, name, body, episode) {
   const at = new Date().toISOString();
+  const insertPlain = (text) => db.prepare("INSERT INTO letters (created_at, radio_name, body) VALUES (?, ?, ?)")
+    .bind(at, name, text).run();
   if (episode === null) {
-    await db.prepare("INSERT INTO letters (created_at, radio_name, body) VALUES (?, ?, ?)").bind(at, name, body).run();
+    await insertPlain(body);
     return;
   }
   const insert = () => db.prepare("INSERT INTO letters (created_at, radio_name, body, episode) VALUES (?, ?, ?, ?)")
@@ -87,15 +89,22 @@ async function saveLetter(db, name, body, episode) {
   try {
     await insert();
   } catch (err) {
-    // episode 欄は 2026-09-24 に足した。それより前に作った D1 には欄が無いので、最初の回つきのお便りでここが足す
-    // (= 欄を足す作業を wrangler のあるマシンに頼らない。2 通が同時に来て片方が先に足しても、もう片方は重複で落ちるだけ)
-    if (!/no column named episode|no such column: episode/i.test(String(err && err.message))) throw err;
     try {
-      await db.prepare("ALTER TABLE letters ADD COLUMN episode INTEGER").run();
-    } catch (e) {
-      if (!/duplicate column/i.test(String(e && e.message))) throw e;
+      // episode 欄は 2026-09-24 に足した。それより前に作った D1 には欄が無いので、最初の回つきのお便りでここが足す
+      // (= 欄を足す作業を wrangler のあるマシンに頼らない。2 通が同時に来て片方が先に足しても、もう片方は重複で落ちるだけ)
+      if (!/no column named episode|no such column: episode/i.test(String(err && err.message))) throw err;
+      try {
+        await db.prepare("ALTER TABLE letters ADD COLUMN episode INTEGER").run();
+      } catch (e) {
+        if (!/duplicate column/i.test(String(e && e.message))) throw e;
+      }
+      await insert();
+    } catch (e2) {
+      // 回の欄に入れられなくても手紙は失わない: 回の番号を本文の頭に書いて、回を決めない形で入れる
+      // (ここまで来るのは想定外 = Cloudflare の log に残す。お便りを読む側は本文の頭で回が分かる)
+      console.error("otayori: episode の欄に入れられなかった", String(e2 && e2.message));
+      await insertPlain(`［第${episode}回について］\n${body}`);
     }
-    await insert();
   }
 }
 

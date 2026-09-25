@@ -21,6 +21,17 @@ show_links:
   amazon: "https://music.amazon.co.jp/podcasts/a91e5a5b-60b2-496e-8cf0-e18f2ef0234c"
 
 episodes:
+  - number: 3
+    title: "第3回 線は消えない（2026.8.17 収録 3/3）"
+    date: 2026-09-26
+    description: "生まれて死んでも、時空に引かれた線は消えない。『三体』は機械に読ませると登場人物が別人になり、七本足の宇宙人は呼び名が定まらない。最後に、この番組の作り方が決まる。"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep03"
+    references:
+      - {label: "劉慈欣『三体』", url: "https://www.amazon.co.jp/dp/4150124345"}
+      - {label: "アンディ・ウィアー『プロジェクト・ヘイル・メアリー』", url: "https://www.amazon.co.jp/dp/4150125066"}
+      - {label: "テッド・チャン『あなたの人生の物語』", url: "https://www.amazon.co.jp/dp/4150114587"}
+      - {label: "映画『メッセージ』（Prime Video）", url: "https://www.amazon.co.jp/dp/B073XV6CGX"}
   - number: 2
     title: "第2回 時間は流れない、ずれるだけ（2026.8.17 収録 2/3）"
     date: 2026-09-23

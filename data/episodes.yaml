@@ -22,6 +22,12 @@ show_links:
   apple: "https://podcasts.apple.com/jp/podcast/id6814526895"
 
 episodes:
+  - number: 4
+    title: "第4回 更新回数が命（2026.8.31 収録 1/4）"
+    date: 2026-09-30
+    description: "いま冒頭で聞こえた掛け声は、この夜に録った。前回の反省、言葉の頭を削っていたノイズ除去、そして、中身より回数だという宣言。"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep04"
   - number: 3
     title: "第3回 線は消えない（2026.8.17 収録 3/3）"
     date: 2026-09-26

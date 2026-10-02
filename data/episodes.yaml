@@ -22,6 +22,12 @@ show_links:
   apple: "https://podcasts.apple.com/jp/podcast/id6814526895"
 
 episodes:
+  - number: 6
+    title: "第6回 スパイスは増やすほど平凡になる（2026.8.31 収録 3/3）"
+    date: 2026-10-03
+    description: "小瓶のスパイスで作れば、それは王侯貴族のカレーになる。カルダモンの粒を噛んで腹が立つ人もいれば、それが好きな人もいる。三十種類を数えようとすると、にんにくも玉ねぎも数に入り、混ぜるほど香りは平均の顔になる。辛さの物差しを確かめに、カワヤンはココイチへ調査に行った。"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep06"
   - number: 5
     title: "第5回 暗黙のカレー権（2026.8.31 収録 2/3）"
     date: 2026-09-30

@@ -20,6 +20,7 @@ show_links:
   spotify: "https://open.spotify.com/show/7zJDMzXoPfC7NSTir6pgj9"
   amazon: "https://music.amazon.co.jp/podcasts/a91e5a5b-60b2-496e-8cf0-e18f2ef0234c"
   apple: "https://podcasts.apple.com/jp/podcast/id6814526895"
+  youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
   - number: 6

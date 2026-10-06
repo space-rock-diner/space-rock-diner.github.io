@@ -255,6 +255,7 @@ header.sub a:hover { text-decoration: none; }
 header.sub svg { width: 110px; height: auto; flex: none; }
 .ep-h1 { font-size: 1.45rem; line-height: 1.6; font-weight: 700; letter-spacing: .04em; margin: .3rem 0 1rem; }
 .ep-page .ep-desc { font-size: 1rem; }
+.ep-rec { color: var(--dim); font-size: .85rem; margin-top: 1.2rem; }
 .refs-list { list-style: none; display: grid; gap: .5rem; font-size: .95rem; }
 .refs-list li { padding-left: 1.1em; text-indent: -1.1em; }
 .refs-list li::before { content: "・"; color: var(--dim); }
@@ -674,6 +675,8 @@ def render_episode(i: int, episodes: list[dict], data: dict, site: dict, style: 
             parts.append(f'<a class="next" href="{ep_path(newer)}"><small>次の回 →</small>{esc(newer["title"])}</a>')
         nav = f'\n\n  <nav class="ep-nav" aria-label="前後の回">{"".join(parts)}</nav>'
     desc = str(e.get("description", ""))
+    # 収録日と分割は題に入れず、回のページのいちばん下に小さく (所有者判断、2026-10-07)
+    rec = f'\n    <p class="ep-rec">{esc(e["recording"])}</p>' if e.get("recording") else ""
     return (
         head(title=f"{e['title']}｜{SITE_NAME}", desc=desc, og_title=str(e["title"]), og_desc=desc,
              url=f"{base}ep/{n}/", og_type="article", base=base)
@@ -687,7 +690,7 @@ def render_episode(i: int, episodes: list[dict], data: dict, site: dict, style: 
     <div class="ep-date">{ep_date(e)}</div>
     <h1 class="ep-h1">{esc(e["title"])}</h1>
     <p class="ep-desc">{esc(desc)}</p>
-{player(e, site)}{listen_block(links, "アプリで聴く")}
+{player(e, site)}{listen_block(links, "アプリで聴く")}{rec}
   </article>{refs_html}
 
 {otayori_section(site, style, e)}{nav}

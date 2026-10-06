@@ -23,6 +23,15 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 7
+    title: "第7回 国ガチャと土着性（2026.9.28 収録 1/3）"
+    date: 2026-10-07
+    description: "十五歳で聴いたはずのハービー・ハンコックは、調べてみるとその年はいなかったらしい。カワヤンはカレーを煮ながら、知らない国の音楽が出てくるアプリを作った。マリのオルタナにはマリの節回しがある。では、日本の土はどこから湧くのか。"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep7"
+    references:
+      - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
+      - {label: "民謡クルセイダーズ", url: "https://www.minyocrusaders.com/"}
   - number: 6
     title: "第6回 スパイスは増やすほど平凡になる（2026.8.31 収録 3/3）"
     date: 2026-10-03

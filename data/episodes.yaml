@@ -33,6 +33,7 @@ episodes:
     links:
       listen: "https://listen.style/p/space-rock-diner/ep7"
     references:
+      - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
       - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
       - {label: "民謡クルセイダーズ", url: "https://www.minyocrusaders.com/"}
   - number: 6
@@ -42,6 +43,8 @@ episodes:
     recording: "2026.8.31 収録 3/3"
     links:
       listen: "https://listen.style/p/space-rock-diner/ep06"
+    references:
+      - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
   - number: 5
     title: "第5回 暗黙のカレー権"
     date: 2026-09-30
@@ -49,6 +52,8 @@ episodes:
     recording: "2026.8.31 収録 2/3"
     links:
       listen: "https://listen.style/p/space-rock-diner/ep05"
+    references:
+      - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
   - number: 4
     title: "第4回 更新回数が命"
     date: 2026-09-30

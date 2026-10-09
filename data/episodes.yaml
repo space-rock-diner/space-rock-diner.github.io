@@ -25,6 +25,17 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 8
+    title: "第8回 盆踊りにバハマ・ママがかかる"
+    date: 2026-10-10
+    description: "柏の盆踊りでは、炭坑節のあとにドイツ生まれのディスコがかかる。炭坑節は北海道の歌ではなかったし、花のお江戸と歌っても、練馬は江戸だったことがない。オダキンも昔、柏に住んでいた。"
+    recording: "2026.9.28 収録 2/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep8"
+    references:
+      - {label: "ボニーM「バハマ・ママ」", url: "https://soundcloud.com/boney-m-official/bahama-mama"}
+      - {label: "歴史を面白く学ぶコテンラジオ", url: "https://coten.co.jp/services/cotenradio/"}
+      - {label: "上々颱風", url: "https://www.sonymusic.co.jp/artist/ShangShang/"}
   - number: 7
     title: "第7回 国ガチャと土着性"
     date: 2026-10-07

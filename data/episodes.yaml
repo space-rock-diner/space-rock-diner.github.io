@@ -25,6 +25,16 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 9
+    title: "第9回 一神教の神様は嫉妬深い"
+    date: 2026-10-14
+    description: "メッカに祈り、日曜は教会へ行く人はいるのか。一神教の神様は嫉妬深い。LGBTQと宗教をいっしょに語る人を、カワヤンはまだ見たことがない。話のきっかけは、ハービー・ハンコックだった。"
+    recording: "2026.9.28 収録 3/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep9"
+    references:
+      - {label: "ドラマ『HOMELAND／ホームランド』", url: "https://www.20thcenturystudios.jp/series/homeland-list"}
+      - {label: "ドラマ『ナルコス』（Netflix）", url: "https://www.netflix.com/jp/title/80025172"}
   - number: 8
     title: "第8回 盆踊りにバハマ・ママがかかる"
     date: 2026-10-10

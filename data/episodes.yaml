@@ -25,6 +25,18 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 10
+    title: "第10回 扇風機のいらない季節"
+    date: 2026-10-17
+    description: "ノイズの正体は扇風機の風だった。扇風機のいらない季節になって、輪島のアワビの粕漬けをつまみながら番組の反省会をする。三十本出してフォロワーが十人に届かなければ、やり方を考え直す。英語は、通じればいい。"
+    recording: "2026.10.5 収録 1/5"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep10"
+    references:
+      - {label: "どうせ死ぬ三人", url: "https://open.spotify.com/show/5aK5ee7u4FG0CpAQG92O6Q"}
+      - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
+      - {label: "歴史を面白く学ぶコテンラジオ", url: "https://coten.co.jp/services/cotenradio/"}
+      - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
   - number: 9
     title: "第9回 一神教の神様は嫉妬深い"
     date: 2026-10-14

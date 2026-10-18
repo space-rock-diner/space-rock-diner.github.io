@@ -34,8 +34,8 @@ episodes:
       listen: "https://listen.style/p/space-rock-diner/ep10"
     references:
       - {label: "どうせ死ぬ三人", url: "https://open.spotify.com/show/5aK5ee7u4FG0CpAQG92O6Q"}
+      - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
       - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
-      - {label: "歴史を面白く学ぶコテンラジオ", url: "https://coten.co.jp/services/cotenradio/"}
       - {label: "のらじお", url: "https://open.spotify.com/show/3TuK58U8pNEiDwiM6xJIRm"}
       - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
   - number: 9

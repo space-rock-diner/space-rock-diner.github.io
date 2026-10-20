@@ -25,6 +25,15 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 11
+    title: "第11回 平らな紙を百枚並べる"
+    date: 2026-10-21
+    description: "Substack に届いた数少ない感想の一つは、平面波がよく分からなかった、だった。音波、地震の P 波、水の中の粒、針で揺らす地面と言い換えて、最後は平らな紙を百枚並べる。遠くから見れば、丸い波もほぼ平らだ。後半はカワヤンの店の話。好きでやってるんでしょ、とは言われたくない。"
+    recording: "2026.10.5 収録 2/5"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep11"
+    references:
+      - {label: "カレー堂えぴす（カワヤンの店、茨城・守谷）", url: "https://currydo-epice.com/"}
   - number: 10
     title: "第10回 扇風機のいらない季節"
     date: 2026-10-17

@@ -25,6 +25,15 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 12
+    title: "第12回 重力はいちばん弱いのに最後に勝つ"
+    date: 2026-10-24
+    description: "この世のどんな波も、平面波を足し合わせれば書ける。それがフーリエの話で、平面波だけでは取りこぼすものがある、というのがオダキンのいまの研究だ。重力は電磁気力より四十桁ほど弱いのに、たくさん集まると最後は勝つ。ブラックホールは天の川にいくつもあるが、物はなかなか落ちていかない。"
+    recording: "2026.10.5 収録 3/5"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep12"
+    references:
+      - {label: "オダキンが 20 代で書いたブラックホールの論文（arXiv）", url: "https://arxiv.org/abs/hep-th/0212108"}
   - number: 11
     title: "第11回 平らな紙を百枚並べる"
     date: 2026-10-21

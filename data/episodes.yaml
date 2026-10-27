@@ -25,6 +25,17 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 13
+    title: "第13回 お便りが来るまでが勝負"
+    date: 2026-10-28
+    description: "三十回出してフォロワーが十人に届かないのが先か、お便りが来るのが先か。初回から全部聴いてくれる追っかけが、ひとりでもほしい。お酒の度数を確かめたあとは、日本で初めてのセクハラ裁判に着想を得た映画の話になる。"
+    recording: "2026.10.5 収録 4/5"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep13"
+    references:
+      - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
+      - {label: "どうせ死ぬ三人", url: "https://open.spotify.com/show/5aK5ee7u4FG0CpAQG92O6Q"}
+      - {label: "映画『ファーストボイス -私たちの逆転裁判-』", url: "https://movies.shochiku.co.jp/firstvoicemovie/"}
   - number: 12
     title: "第12回 重力はいちばん弱いのに最後に勝つ"
     date: 2026-10-24

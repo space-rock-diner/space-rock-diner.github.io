@@ -25,6 +25,13 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 14
+    title: "第14回 人生は波みたいなもの"
+    date: 2026-10-31
+    description: "カワヤンが少しトーンを落としたのには理由があった。女性の役員の数合わせ、理系の女子枠、囲碁と将棋。ポジションに就けば人は育つ、とオダキンは言う。夜が更けると、話はカワヤンが音楽を始めた理由に行き着く。人生は波みたいなもの。"
+    recording: "2026.10.5 収録 5/5"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep14"
   - number: 13
     title: "第13回 お便りが来るまでが勝負"
     date: 2026-10-28

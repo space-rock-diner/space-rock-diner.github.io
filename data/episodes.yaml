@@ -106,6 +106,7 @@ episodes:
     links:
       listen: "https://listen.style/p/space-rock-diner/ep7"
     references:
+      - {label: "ハービー・ハンコック", url: "https://www.herbiehancock.com/"}
       - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
       - {label: "民謡クルセイダーズ", url: "https://www.minyocrusaders.com/"}
   - number: 6

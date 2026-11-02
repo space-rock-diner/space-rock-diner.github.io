@@ -32,6 +32,9 @@ episodes:
     recording: "2026.10.5 収録 5/5"
     links:
       listen: "https://listen.style/p/space-rock-diner/ep14"
+    references:
+      - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
+      - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
   - number: 13
     title: "第13回 お便りが来るまでが勝負"
     date: 2026-10-28

@@ -25,6 +25,16 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 15
+    title: "第15回 言葉に時間がない"
+    date: 2026-11-04
+    description: "番組を聴いた古い友人から、感想が届いた。映画の宇宙人は、文章を一枚の絵にして一度に伝える。言葉に時間がない。使う言葉で考え方は変わるのか。ふたりとも、変わると思っている。「お疲れ様です」は英語にならない。初めてのシラフの収録。"
+    recording: "2026.10.12 収録 1/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep15"
+    references:
+      - {label: "映画『メッセージ』（Prime Video）", url: "https://www.amazon.co.jp/dp/B073XV6CGX"}
+      - {label: "テッド・チャン『あなたの人生の物語』（映画の原作）", url: "https://www.amazon.co.jp/dp/4150114587"}
   - number: 14
     title: "第14回 人生は波みたいなもの"
     date: 2026-10-31

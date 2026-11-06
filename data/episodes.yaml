@@ -25,6 +25,15 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 16
+    title: "第16回 自分が自分だと証明するのがいちばん難しい"
+    date: 2026-11-07
+    description: "日本の技術が遅れたのは言葉のせいではないか、とカワヤンは言う。車や家電に言葉はいらないが、サービスやAIは言葉にしないと作れない。免許証の情報が大量に漏れて、オダキンの分も入っていた。自分が自分だと証明するのは、いちばん難しい。話は2ちゃんねるを経て、車の顔に流れ着く。"
+    recording: "2026.10.12 収録 2/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep16"
+    references:
+      - {label: "映画『メッセージ』（Prime Video）", url: "https://www.amazon.co.jp/dp/B073XV6CGX"}
   - number: 15
     title: "第15回 言葉に時間がない"
     date: 2026-11-04

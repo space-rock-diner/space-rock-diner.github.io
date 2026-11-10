@@ -25,6 +25,18 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 17
+    title: "第17回 観測にかからない確率も計算できる"
+    date: 2026-11-11
+    description: "現在が過去を選ぶことはあるのか。友人の問いに、オダキンは散乱の話で答えようとする。始まりはすっきりしていて、終わりはいろいろな状態の重ね合わせになる。観測にかからない確率も、ちゃんと計算できる。映画の宇宙人が何を頼みに来たのかは、ふたりとも思い出せない。目指すのは、身の回り二メートルの優しい世界。"
+    recording: "2026.10.12 収録 3/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep17"
+    references:
+      - {label: "映画『メッセージ』（Prime Video）", url: "https://www.amazon.co.jp/dp/B073XV6CGX"}
+      - {label: "テッド・チャン『あなたの人生の物語』（映画の原作）", url: "https://www.amazon.co.jp/dp/4150114587"}
+      - {label: "私より先に丁寧に暮らすな", url: "https://open.spotify.com/show/3sPGEXpPpLhl79fYfr0mbk"}
+      - {label: "上坂あゆ美『老人ホームで死ぬほどモテたい』", url: "https://www.kankanbou.com/books/tanka/shinei/0506"}
   - number: 16
     title: "第16回 自分が自分だと証明するのがいちばん難しい"
     date: 2026-11-07

@@ -25,6 +25,13 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 18
+    title: "第18回 自転車泥棒は自転車が好きだった"
+    date: 2026-11-14
+    description: "昼すぎに会場に入っても、ライブハウスでは「おはようございます」と言う。カワヤンのロードバイクは、家の前から盗まれた。見つかったと連絡が来たとき、フレームのほかはぜんぶ安い部品に替わっていた。犯人は、自分で乗るほど自転車が好きだったらしい。それがいちばん腹が立つ。花粉の薬と筑波のメキシコ料理屋を経て、話は三十年前の結婚式の帰り道までさかのぼる。カワヤンが止めに入る。"
+    recording: "2026.10.19 収録 1/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep18"
   - number: 17
     title: "第17回 観測にかからない確率も計算できる"
     date: 2026-11-11

@@ -25,6 +25,17 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 19
+    title: "第19回 ドキュメンタリーはなかなか面白い世界"
+    date: 2026-11-18
+    description: "オダキンは、一本のドキュメンタリーを見てきた。『さよなら、私のロシア』。国営放送の特派員として働いてきた母親と、それを疑いはじめた娘。家族でロシアを旅する映画になるはずが、カメラは家族のあいだのずれを写していく。話はそこから、日本の映画の値段へ、シン・ゴジラへ、スター・ウォーズへ。映画館に貼られたポスターには、知った顔があった。"
+    recording: "2026.11.16 収録"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep19"
+    references:
+      - {label: "映画『さよなら、私のロシア』（ジャンナ・アガラコワ監督、2026-11-14 公開）", url: "https://littlegraywolf.jp/"}
+      - {label: "アリス・サヴォナさんの東京女子大学物理学セミナー（2026-10-08）", url: "https://twcu-phys-web.pages.dev/seminars/savona/"}
+      - {label: "ドラマ『ポリティカルパン』（フジテレビ、石原さとみ主演）", url: "https://www.fujitv.co.jp/politicalupin/"}
   - number: 18
     title: "第18回 自転車泥棒は自転車が好きだった"
     date: 2026-11-14

@@ -25,6 +25,18 @@ show_links:
   youtube: "https://www.youtube.com/playlist?list=PLNR17gdMWopE"
 
 episodes:
+  - number: 20
+    title: "第20回 陳腐なものをちゃんと陳腐に作る"
+    date: 2026-11-21
+    description: "今日は音楽の話をするはずだった。番組のジングルを、カワヤンはどう作ったのか。手がかりは YMO の『増殖』の一曲目と、声をロボットにする機械。ラジオのジングルらしさは、作る前からそこにある。AI には、聞いた人がおおっと思うメロディーはまだ作れない。微分音のギターを弾くカナダのバンドの話をはさんで、オダキンがその場で Suno に歌を作らせる。届いたのは、とても陳腐なラブソング。陳腐なものを陳腐に作るのは、得意らしい。"
+    recording: "2026.10.19 収録 2/3"
+    links:
+      listen: "https://listen.style/p/space-rock-diner/ep20"
+    references:
+      - {label: "YMO『増殖』（1 曲目が「JINGLE \"Y.M.O.\"」）", url: "https://www.sonymusic.co.jp/artist/YellowMagicOrchestra/"}
+      - {label: "Angine de Poitrine", url: "https://anginedepoitrine.com/"}
+      - {label: "Angine de Poitrine のライブ（KEXP の公式映像）", url: "https://www.youtube.com/watch?v=0Ssi-9wS1so"}
+      - {label: "Evraak（カワヤンが去年までいたバンド）", url: "https://evraak.com/"}
   - number: 19
     title: "第19回 ドキュメンタリーはなかなか面白い世界"
     date: 2026-11-18
